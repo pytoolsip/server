@@ -2,7 +2,7 @@
 # @Author: JimDreamHeart
 # @Date:   2019-03-03 22:54:01
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-12 23:38:05
+# @Last Modified time: 2019-03-12 23:44:27
 import os,logging;
 from logging.handlers import RotatingFileHandler;
 
@@ -25,9 +25,9 @@ MethodKeyMap = {
 # LogRecord类
 class LogRecord(logging.LogRecord):
 	"""docstring for LogRecord"""
-	def __init__(self, name, level, pathname, lineno, msg, args, exc_info, func=None, sinfo=None, **kwargs):
+	def __init__(self, name, level, pathname, lineno, msg, args, exc_info, func=None):
 		pathname = pathname.replace(_GG("g_SrcPath"), ""); # 修改路径为相对路径
-		super(LogRecord, self).__init__(name, level, pathname, lineno, msg, args, exc_info, func=None, sinfo=None, **kwargs);
+		super(LogRecord, self).__init__(name, level, pathname, lineno, msg, args, exc_info, func=None);
 
 	def getMessage(self):
 		logMsg = "{} "*(len(self.args) + 1);
