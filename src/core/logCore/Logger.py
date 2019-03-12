@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimDreamHeart
 # @Date:   2019-03-03 22:54:01
-# @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-06 00:05:32
+# @Last Modified by:   JinZhang
+# @Last Modified time: 2019-03-12 20:56:53
 import logging;
 from logging.handlers import RotatingFileHandler;
 
@@ -22,6 +22,7 @@ MethodKeyMap = {
 	"e" : "error",
 };
 
+# LogRecord类
 class LogRecord(logging.LogRecord):
 	"""docstring for LogRecord"""
 	def __init__(self, name, level, pathname, lineno, msg, args, exc_info, func=None, sinfo=None, **kwargs):
@@ -32,8 +33,10 @@ class LogRecord(logging.LogRecord):
 		logMsg = "{} "*(len(self.args) + 1);
 		return logMsg.format(self.msg, *self.args);
 
-logging.setLogRecordFactory(LogRecord);
+# 重置logging的LogRecord类
+logging.LogRecord = LogRecord;
 
+# Logger类
 class Logger(logging.Logger):
 	"""docstring for Logger"""
 	def __init__(self, name, level = "debug", fmt="%(asctime)s - %(pathname)s[line:%(lineno)d] - %(levelname)s: %(message)s",
