@@ -2,8 +2,8 @@
 # @Author: JimDreamHeart
 # @Date:   2019-03-12 23:49:20
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-12 23:55:42
-import os;
+# @Last Modified time: 2019-03-13 00:29:33
+import os,json;
 
 # 校验依赖模块
 def verifyDepends():
