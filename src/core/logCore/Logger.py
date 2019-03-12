@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 # @Author: JimDreamHeart
 # @Date:   2019-03-03 22:54:01
-# @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-12 20:56:53
-import logging;
+# @Last Modified by:   JimDreamHeart
+# @Last Modified time: 2019-03-12 23:38:05
+import os,logging;
 from logging.handlers import RotatingFileHandler;
 
 from _Global import _GG;
@@ -68,6 +68,9 @@ class Logger(logging.Logger):
 	# 设置日志文件输出
 	def __setFileHandler__(self, fileName, maxBytes, backupCount, level = "debug"):
 		if not hasattr(self, "__fileHandler"):
+			dirName = os.path.abspath(os.path.dirname(fileName));
+			if not os.path.exists(dirName):
+				os.mkdir(dirName);
 			self.__fileHandler = RotatingFileHandler(fileName, maxBytes = maxBytes, backupCount = backupCount, encoding = "utf-8");
 			self.__addHandler__(self.__fileHandler, level = level);
 

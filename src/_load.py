@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimZhang
 # @Date:   2019-02-24 05:05:50
-# @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-12 20:43:32
+# @Last Modified by:   JimZhang
+# @Last Modified time: 2019-03-12 23:25:12
 import os;
 import sys;
 import time;
@@ -52,9 +52,9 @@ class Loader(object):
 
 	def loadLogger(self):
 		SrvConf = _G._GG("ServerConfig").Config(); # 服务配置
-		path = SrvConf.Get("log", "path", "").replace("/", "\\");
-		if len(path) > 0 and path[-1] != "\\":
-			path += "\\";
+		path = SrvConf.Get("log", "path", "").replace("\\", "/");
+		if len(path) > 0 and path[-1] != "/":
+			path += "/";
 		name = SrvConf.Get("log", "name", "PyToolsIP");
 		curTimeStr = time.strftime("%Y_%m_%d", time.localtime());
 		logger = Logger("Common", isLogFile = True, logFileName = "".join([_G._GG("g_ProjectPath"), path, name, "_%s.log"%curTimeStr]),
@@ -74,10 +74,10 @@ class Loader(object):
 
 	# 加载全局路径名变量
 	def loadPaths(self):
-		_G.setGlobalVarTo_Global("g_ProjectPath", os.path.abspath(os.path.join(CURRENT_PATH, "..")) + "\\");
-		_G.setGlobalVarTo_Global("g_BinPath", _G._GG("g_ProjectPath") + "bin\\");
-		_G.setGlobalVarTo_Global("g_LibPath", _G._GG("g_ProjectPath") + "lib\\");
-		_G.setGlobalVarTo_Global("g_SrcPath", CURRENT_PATH + "\\");
+		_G.setGlobalVarTo_Global("g_ProjectPath", os.path.abspath(os.path.join(CURRENT_PATH, "..")) + "/");
+		_G.setGlobalVarTo_Global("g_BinPath", _G._GG("g_ProjectPath") + "bin/");
+		_G.setGlobalVarTo_Global("g_LibPath", _G._GG("g_ProjectPath") + "lib/");
+		_G.setGlobalVarTo_Global("g_SrcPath", CURRENT_PATH + "/");
 		pass;
 
 	# 加载全局对象变量
