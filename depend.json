@@ -2,5 +2,6 @@
     "pymysql", 
     "grpcio", 
     "protobuf", 
-    "grpcio-tools"
+    "grpcio-tools", 
+    "configparser" 
 ]
