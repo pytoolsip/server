@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 # @Author: JimZhang
 # @Date:   2019-02-24 05:05:50
-# @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-06 00:06:01
+# @Last Modified by:   JinZhang
+# @Last Modified time: 2019-03-12 20:43:32
 import os;
 import sys;
 import time;
+import grpc;
+from concurrent import futures; #具有线程池和进程池、管理并行编程任务，处理非确定性的执行流程、进程/线程同步等功能
 # 当前文件位置
 CURRENT_PATH = os.path.dirname(os.path.realpath(__file__));
 # 添加搜索路径
-if CURRENT_PATH + "\\core" not in sys.path:
-	sys.path.append(CURRENT_PATH + "\\core");
+if os.path.join(CURRENT_PATH, "core") not in sys.path:
+	sys.path.append(os.path.join(CURRENT_PATH, "core"));
 
-import grpc;
-from concurrent import futures; #具有线程池和进程池、管理并行编程任务，处理非确定性的执行流程、进程/线程同步等功能
-
+# 加载工程
 import _Global as _G;
 from function.base import *;
 from net.proto import common_pb2_grpc;
