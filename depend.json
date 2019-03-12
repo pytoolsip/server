@@ -1,0 +1,7 @@
+[
+    "pymysql", 
+    "wxPython", 
+    "grpcio", 
+    "protobuf", 
+    "grpcio-tools"
+]
