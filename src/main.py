@@ -2,16 +2,16 @@
 # @Author: JimZhang
 # @Date:   2019-02-23 12:36:46
 # @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-12 19:50:34
+# @Last Modified time: 2019-03-12 20:11:33
 import os,time,json;
 
 # 安装依赖模块
 dependJson = os.path.abspath(os.path.join(os.path.dirname(__file__),"../depend.json"));
 if os.path.exists(dependJson):
-	with open(dependJson, "r") as f:
+	with open(dependJson, "rb") as f:
 		dependList = json.loads(f.read());
 		for depend in dependList:
-			if os.system("pip show " + depend) == 1:
+			if os.system("pip show " + depend) != 0:
 				os.system("pip install " + depend);
 
 # 加载工程
