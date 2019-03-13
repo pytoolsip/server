@@ -2,11 +2,11 @@
 # @Author: JimZhang
 # @Date:   2019-02-23 12:36:46
 # @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-13 20:38:42
+# @Last Modified time: 2019-03-13 20:41:01
 import sys,os,time;
 # 设置默认编码格式
 reload(sys);
-sys.setdefaultencoding('utf8');
+sys.setdefaultencoding('utf-8');
 
 # 加载工程
 from _load import Loader;
