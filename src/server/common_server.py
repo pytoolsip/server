@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
-# @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-13 20:28:28
+# @Last Modified by:   JimDreamHeart
+# @Last Modified time: 2019-03-14 22:30:33
 import os,json,time;
 
 from _Global import _GG;
@@ -55,7 +55,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 插入注册数据到数据库中
-		sql = "INSERT INTO user(name, password, email) VALUES(%s, %s, %s)"%(request.name, request.password, request.email);
+		sql = "INSERT INTO user(name, password, email) VALUES('%s', '%s', '%s')"%(request.name, request.password, request.email);
 		ret, results = _GG("DBCManager").execute(sql);
 		return common_pb2.Resp(isSuccess = ret);
 
@@ -105,7 +105,9 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			return common_pb2.Resp(isSuccess = False);
 		# 插入工具信息到数据库中
 		url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
-		sql = "INSERT INTO tool(uid, name, version, common_version, description, url, time) VALUES(%d, %s, %s, %s)"%(request.uid, request.name, request.version, request.common_version, request.description, url, time.time());
+		sql = "INSERT INTO tool(uid, name, version, common_version, description, url, time) VALUES(%d, '%s', '%s', '%s', '%s', '%s', '%s')"%(
+			request.uid, request.name, request.version, request.common_version, request.description,
+			url, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()));
 		ret, results = _GG("DBCManager").execute(sql);
 		if ret:
 			return common_pb2.Resp(isSuccess = True);
@@ -155,7 +157,9 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			return common_pb2.Resp(isSuccess = False);
 		# 插入评论信息到数据库中
 		tid = results[0]["id"];
-		sql = "INSERT INTO tool(uid, tid, score, content, time) VALUES(%d, %s, %s, %s)"%(request.uid, tid, request.score, request.content, time.time());
+		sql = "INSERT INTO tool(uid, tid, score, content, time) VALUES(%d, %d, %.1f, '%s', '%s')"%(
+			request.uid, tid, request.score, request.content,
+			time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()));
 		ret, results = _GG("DBCManager").execute(sql);
 		if ret:
 			return common_pb2.Resp(isSuccess = True);
@@ -174,7 +178,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			return common_pb2.Resp(isSuccess = False);
 		# 插入评论信息到数据库中
 		tid = results[0]["id"];
-		sql = "INSERT INTO tool(uid, tid) VALUES(%d, %s, %s, %s)"%(request.uid, tid);
+		sql = "INSERT INTO tool(uid, tid) VALUES(%d, %d)"%(request.uid, tid);
 		ret, results = _GG("DBCManager").execute(sql);
 		if ret:
 			return common_pb2.Resp(isSuccess = True);
