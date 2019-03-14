@@ -2,7 +2,7 @@
 # @Author: JimZhang
 # @Date:   2019-03-01 21:16:40
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-14 20:26:52
+# @Last Modified time: 2019-03-14 20:49:51
 
 from _Global import _GG;
 from net.proto import common_pb2,common_pb2_grpc;
@@ -15,14 +15,14 @@ def ExtendSrvMethod():
 	pass;
 
 def RequestToolInfos(data, context):
-	sql = "SELECT tool.name, version, detail, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE common_version = '%s'"%data.get("commonVersion", "");
+	sql = "SELECT tool.name, version, description, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE common_version = '%s'"%data.get("commonVersion", "");
 	ret, retData = _GG("DBCManager").execute(sql);
 	if not ret:
 		return False, [];
 	return True, [{
 		"title" : info["name"],
 		"version" : info["version"],
-		"detail" : info["detail"] and info["detail"] or "",
+		"detail" : info["description"],
 		"userName" : info["user.name"],
 	} for info in retData];
 
