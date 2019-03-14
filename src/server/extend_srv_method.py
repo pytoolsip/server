@@ -2,7 +2,7 @@
 # @Author: JimZhang
 # @Date:   2019-03-01 21:16:40
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-11 23:17:52
+# @Last Modified time: 2019-03-14 20:26:52
 
 from _Global import _GG;
 from net.proto import common_pb2,common_pb2_grpc;
@@ -15,7 +15,7 @@ def ExtendSrvMethod():
 	pass;
 
 def RequestToolInfos(data, context):
-	sql = "SELECT tools.name, version, detail, users.name FROM tools LEFT OUTER JOIN users ON tools.uid = users.id WHERE common_version = '%s'"%data.get("commonVersion", "");
+	sql = "SELECT tool.name, version, detail, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE common_version = '%s'"%data.get("commonVersion", "");
 	ret, retData = _GG("DBCManager").execute(sql);
 	if not ret:
 		return False, [];
@@ -23,17 +23,17 @@ def RequestToolInfos(data, context):
 		"title" : info["name"],
 		"version" : info["version"],
 		"detail" : info["detail"] and info["detail"] or "",
-		"userName" : info["users.name"],
+		"userName" : info["user.name"],
 	} for info in retData];
 
 def VertifyToolName(data, context):
-	sql = "SELECT id FROM tools WHERE name = '%s' AND common_version = '%s'"%(data.get("name", ""), data.get("commonVersion", ""));
+	sql = "SELECT id FROM tool WHERE name = '%s' AND common_version = '%s'"%(data.get("name", ""), data.get("commonVersion", ""));
 	return _GG("DBCManager").execute(sql);
 
 def VertifyUserName(data, context):
-	sql = "SELECT id FROM users WHERE name = '%s'"%data.get("name", "");
+	sql = "SELECT id FROM user WHERE name = '%s'"%data.get("name", "");
 	return _GG("DBCManager").execute(sql);
 
 def VertifyUserEmail(data, context):
-	sql = "SELECT id FROM users WHERE email = '%s'"%data.get("email", "");
+	sql = "SELECT id FROM user WHERE email = '%s'"%data.get("email", "");
 	return _GG("DBCManager").execute(sql);
