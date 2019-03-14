@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
 # @Author: JimDreamHeart
 # @Date:   2019-03-03 22:54:01
-# @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-12 23:44:27
+# @Last Modified by:   JinZhang
+# @Last Modified time: 2019-03-14 18:21:55
 import os,logging;
 from logging.handlers import RotatingFileHandler;
 
 from _Global import _GG;
+from function.base import *;
+
+# 当前文件位置
+CURRENT_PATH = os.path.dirname(os.path.realpath(__file__));
+# main文件路径
+MAIN_PATH = os.path.abspath(os.path.join(CURRENT_PATH, "../.."))
 
 LevelKeyMap = {
 	"debug" : logging.DEBUG,
@@ -26,7 +32,7 @@ MethodKeyMap = {
 class LogRecord(logging.LogRecord):
 	"""docstring for LogRecord"""
 	def __init__(self, name, level, pathname, lineno, msg, args, exc_info, func=None):
-		pathname = pathname.replace(_GG("g_SrcPath"), ""); # 修改路径为相对路径
+		pathname = pathname.replace(VerifyPath(MAIN_PATH+"/"), ""); # 修改路径为相对路径
 		super(LogRecord, self).__init__(name, level, pathname, lineno, msg, args, exc_info, func=None);
 
 	def getMessage(self):
