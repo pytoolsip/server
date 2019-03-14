@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimDreamHeart
 # @Date:   2018-03-21 22:31:37
-# @Last Modified by:   JimZhang
-# @Last Modified time: 2019-03-12 23:27:13
+# @Last Modified by:   JinZhang
+# @Last Modified time: 2019-03-14 17:21:30
 
 import sys;
 import os;
@@ -74,3 +74,10 @@ def Del(obj):
 	if hasattr(obj, "__dest__"):
 		obj.__dest__();
 	del obj;
+
+# 校验路径
+def VerifyPath(path):
+	if sys.platform.startswith("win32"):
+		return path.replace("/", "\\");
+	else:
+		return path.replace("\\", "/");
