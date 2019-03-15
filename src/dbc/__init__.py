@@ -2,7 +2,7 @@
 # @Author: JinZhang
 # @Date:   2019-03-12 15:04:31
 # @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-15 11:02:10
+# @Last Modified time: 2019-03-15 11:27:27
 
 from MySQLDB import MySQLDB;
 from RedisDB import RedisDB;
@@ -17,7 +17,7 @@ class DBCManager(object):
 			self.__mysql = MySQLDB();
 		return self.__mysql;
 
-	def RedisDB(self):
+	def Redis(self):
 		if not hasattr(self, "__redis"):
 			self.__redis = RedisDB();
 		return self.__redis;
