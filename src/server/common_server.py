@@ -2,7 +2,7 @@
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
 # @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-15 11:07:15
+# @Last Modified time: 2019-03-15 19:36:48
 import os,json,time;
 
 from _Global import _GG;
@@ -42,7 +42,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 	
 	def Login(self, request, context):
 		sql = "SELECT * FROM user WHERE name = '%s' AND password = '%s'"%(request.name, request.password);
-		ret, results = _GG("DBCManager").MySQL().exec(sql);
+		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			userInfo = results[0];
 			return common_pb2.LoginResp(isSuccess = True, name = userInfo["name"], email = userInfo["email"]);
@@ -51,18 +51,18 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 	def Register(self, request, context):
 		# 校验提交的信息中是否已存在于数据库中
 		sql = "SELECT id FROM user WHERE name = '%s'"%request.name;
-		ret, results = _GG("DBCManager").MySQL().exec(sql);
+		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 插入注册数据到数据库中
 		sql = "INSERT INTO user(name, password, email) VALUES('%s', '%s', '%s')"%(request.name, request.password, request.email);
-		ret, results = _GG("DBCManager").MySQL().exec(sql);
+		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		return common_pb2.Resp(isSuccess = ret);
 
 	def Upload(self, request, context):
 		# 校验所传用户ID数据
 		sql = "SELECT name FROM user WHERE id = '%d'"%request.uid;
-		ret, results = _GG("DBCManager").MySQL().exec(sql);
+		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 判断请求信息是否正确
@@ -71,7 +71,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			return common_pb2.UpdateResp(isPermit = False);
 		# 判断数据库是否已有相应工具名，并校验所要上传工具版本号是否为最新
 		sql = "SELECT version FROM tool WHERE name = '%s' AND common_version = '%s'"%(request.name, request.common_version);
-		ret, results = _GG("DBCManager").MySQL().exec(sql);
+		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
 			for toolInfo in results:
 				verList = self.splitVersion(toolInfo["version"]);
@@ -90,7 +90,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 	def Uploaded(self, request, context):
 		# 校验所传用户ID数据
 		sql = "SELECT name FROM user WHERE id = '%d'"%request.uid;
-		ret, results = _GG("DBCManager").MySQL().exec(sql);
+		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 判断上传信息是否正确
@@ -108,7 +108,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		sql = "INSERT INTO tool(uid, name, version, common_version, description, url, time) VALUES(%d, '%s', '%s', '%s', '%s', '%s', '%s')"%(
 			request.uid, request.name, request.version, request.common_version, request.description,
 			url, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()));
-		ret, results = _GG("DBCManager").MySQL().exec(sql);
+		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			return common_pb2.Resp(isSuccess = True);
 		return common_pb2.Resp(isSuccess = False);
@@ -117,7 +117,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		# 校验玩家下载请求权限[request.uid]
 		# 获取下载数据
 		sql = "SELECT id FROM tool WHERE name = '%s' AND version = '%s'"%(request.name, request.version);
-		ret, results = _GG("DBCManager").MySQL().exec(sql);
+		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			fileName = "%s_%s.zip"%(request.name, request.version);
 			totalSize = os.path.getsize(os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName));
@@ -132,7 +132,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			return common_pb2.UpdateResp(isUpToDate = True);
 		# 找到对应common版本的下载链接
 		sql = "SELECT version FROM tool WHERE name = '%s' AND common_version = '%s'"%(request.name, ".".join(toolVerList[:2]));
-		ret, results = _GG("DBCManager").MySQL().exec(sql);
+		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			for toolInfo in results:
 				verList = self.splitVersion(toolInfo["version"]);
@@ -147,12 +147,12 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 	def Comment(self, request, context):
 		# 校验所传用户ID数据
 		sql = "SELECT name FROM user WHERE id = '%d'"%request.uid;
-		ret, results = _GG("DBCManager").MySQL().exec(sql);
+		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 校验所传用户ID数据
 		sql = "SELECT id FROM tool WHERE name = '%s' AND version = '%s' AND common_version = '%s'"%(request.name, request.version, request.common_version);
-		ret, results = _GG("DBCManager").MySQL().exec(sql);
+		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 插入评论信息到数据库中
@@ -160,7 +160,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		sql = "INSERT INTO tool(uid, tid, score, content, time) VALUES(%d, %d, %.1f, '%s', '%s')"%(
 			request.uid, tid, request.score, request.content,
 			time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()));
-		ret, results = _GG("DBCManager").MySQL().exec(sql);
+		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			return common_pb2.Resp(isSuccess = True);
 		return common_pb2.Resp(isSuccess = False);
@@ -168,18 +168,18 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 	def Collect(self, request, context):
 		# 校验所传用户ID数据
 		sql = "SELECT name FROM user WHERE id = '%d'"%request.uid;
-		ret, results = _GG("DBCManager").MySQL().exec(sql);
+		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 校验所传用户ID数据
 		sql = "SELECT id FROM tool WHERE name = '%s' AND version = '%s' AND common_version = '%s'"%(request.name, request.version, request.common_version);
-		ret, results = _GG("DBCManager").MySQL().exec(sql);
+		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 插入评论信息到数据库中
 		tid = results[0]["id"];
 		sql = "INSERT INTO tool(uid, tid) VALUES(%d, %d)"%(request.uid, tid);
-		ret, results = _GG("DBCManager").MySQL().exec(sql);
+		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			return common_pb2.Resp(isSuccess = True);
 		return common_pb2.Resp(isSuccess = False);

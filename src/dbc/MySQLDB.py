@@ -2,7 +2,7 @@
 # @Author: JinZhang
 # @Date:   2019-03-15 10:58:21
 # @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-15 11:09:09
+# @Last Modified time: 2019-03-15 19:36:52
 import pymysql;
 
 from _Global import _GG;
@@ -21,7 +21,7 @@ class MySQLDB(object):
 			database = srvConf.Get("mysql", "database"),
 			charset = "utf8");
 
-	def exec(self, sql):
+	def execute(self, sql):
 		ret, results = False, [];
 		conn = self.getConnection();
 		cursor = conn.cursor(cursor=pymysql.cursors.DictCursor);

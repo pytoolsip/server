@@ -2,7 +2,7 @@
 # @Author: JimZhang
 # @Date:   2019-03-01 21:16:40
 # @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-15 12:19:23
+# @Last Modified time: 2019-03-15 19:36:43
 import random;
 import smtplib;
 from email.mime.text import MIMEText;
@@ -21,7 +21,7 @@ def ExtendSrvMethod():
 
 def RequestToolInfos(data, context):
 	sql = "SELECT tool.name, version, description, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE common_version = '%s'"%data.get("commonVersion", "");
-	ret, retData = _GG("DBCManager").MySQL().exec(sql);
+	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if not ret:
 		return False, [];
 	return True, [{
@@ -33,15 +33,15 @@ def RequestToolInfos(data, context):
 
 def VertifyToolName(data, context):
 	sql = "SELECT id FROM tool WHERE name = '%s' AND common_version = '%s'"%(data.get("name", ""), data.get("commonVersion", ""));
-	return _GG("DBCManager").MySQL().exec(sql);
+	return _GG("DBCManager").MySQL().execute(sql);
 
 def VertifyUserName(data, context):
 	sql = "SELECT id FROM user WHERE name = '%s'"%data.get("name", "");
-	return _GG("DBCManager").MySQL().exec(sql);
+	return _GG("DBCManager").MySQL().execute(sql);
 
 def VertifyUserEmail(data, context):
 	sql = "SELECT id FROM user WHERE email = '%s'"%data.get("email", "");
-	return _GG("DBCManager").MySQL().exec(sql);
+	return _GG("DBCManager").MySQL().execute(sql);
 
 def VertifyVerificationCode(data, context):
 	# 校验是否存在验证码相关信息
