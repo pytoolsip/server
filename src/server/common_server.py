@@ -2,7 +2,7 @@
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
 # @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-15 19:36:48
+# @Last Modified time: 2019-03-15 20:17:40
 import os,json,time;
 
 from _Global import _GG;
@@ -49,15 +49,18 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		return common_pb2.LoginResp(isSuccess = False);
 
 	def Register(self, request, context):
-		# 校验提交的信息中是否已存在于数据库中
-		sql = "SELECT id FROM user WHERE name = '%s'"%request.name;
-		ret, results = _GG("DBCManager").MySQL().execute(sql);
-		if ret:
-			return common_pb2.Resp(isSuccess = False);
-		# 插入注册数据到数据库中
-		sql = "INSERT INTO user(name, password, email) VALUES('%s', '%s', '%s')"%(request.name, request.password, request.email);
-		ret, results = _GG("DBCManager").MySQL().execute(sql);
-		return common_pb2.Resp(isSuccess = ret);
+		# 校验验证码
+		if _GG("DBCManager").Redis().hexists("verification_code", request.email) and _GG("DBCManager").Redis().hget("verification_code", request.email) == request.veriCode:
+			# 校验提交的信息中是否已存在于数据库中
+			sql = "SELECT id FROM user WHERE name = '%s'"%request.name;
+			ret, results = _GG("DBCManager").MySQL().execute(sql);
+			if ret:
+				return common_pb2.Resp(isSuccess = False);
+			# 插入注册数据到数据库中
+			sql = "INSERT INTO user(name, password, email) VALUES('%s', '%s', '%s')"%(request.name, request.password, request.email);
+			ret, results = _GG("DBCManager").MySQL().execute(sql);
+			return common_pb2.Resp(isSuccess = ret);
+		return common_pb2.Resp(isSuccess = False, data = str.encode(json.dumps({"content" : "验证码错误，请重新发送并输入！"})));
 
 	def Upload(self, request, context):
 		# 校验所传用户ID数据
@@ -70,7 +73,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if len(toolVerList) != 3:
 			return common_pb2.UpdateResp(isPermit = False);
 		# 判断数据库是否已有相应工具名，并校验所要上传工具版本号是否为最新
-		sql = "SELECT version FROM tool WHERE name = '%s' AND common_version = '%s'"%(request.name, request.common_version);
+		sql = "SELECT version FROM tool WHERE name = '%s' AND common_version = '%s'"%(request.name, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
 			for toolInfo in results:
@@ -106,7 +109,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		# 插入工具信息到数据库中
 		url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
 		sql = "INSERT INTO tool(uid, name, version, common_version, description, url, time) VALUES(%d, '%s', '%s', '%s', '%s', '%s', '%s')"%(
-			request.uid, request.name, request.version, request.common_version, request.description,
+			request.uid, request.name, request.version, request.commonVersion, request.description,
 			url, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()));
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
@@ -131,7 +134,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if len(toolVerList) != 3:
 			return common_pb2.UpdateResp(isUpToDate = True);
 		# 找到对应common版本的下载链接
-		sql = "SELECT version FROM tool WHERE name = '%s' AND common_version = '%s'"%(request.name, ".".join(toolVerList[:2]));
+		sql = "SELECT version FROM tool WHERE name = '%s' AND common_version = '%s'"%(request.name, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			for toolInfo in results:
@@ -151,7 +154,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 校验所传用户ID数据
-		sql = "SELECT id FROM tool WHERE name = '%s' AND version = '%s' AND common_version = '%s'"%(request.name, request.version, request.common_version);
+		sql = "SELECT id FROM tool WHERE name = '%s' AND version = '%s' AND common_version = '%s'"%(request.name, request.version, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
@@ -172,7 +175,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 校验所传用户ID数据
-		sql = "SELECT id FROM tool WHERE name = '%s' AND version = '%s' AND common_version = '%s'"%(request.name, request.version, request.common_version);
+		sql = "SELECT id FROM tool WHERE name = '%s' AND version = '%s' AND common_version = '%s'"%(request.name, request.version, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
