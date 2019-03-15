@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
-# @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-15 20:17:40
+# @Last Modified by:   JimDreamHeart
+# @Last Modified time: 2019-03-16 03:41:31
 import os,json,time;
 
 from _Global import _GG;
@@ -45,7 +45,8 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			userInfo = results[0];
-			return common_pb2.LoginResp(isSuccess = True, name = userInfo["name"], email = userInfo["email"]);
+			return common_pb2.LoginResp(isSuccess = True, 
+				userInfo = common_pb2.UserInfo(uid = userInfo["id"], name = userInfo["name"], email = userInfo["email"]));
 		return common_pb2.LoginResp(isSuccess = False);
 
 	def Register(self, request, context):
