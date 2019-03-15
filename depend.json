@@ -3,5 +3,6 @@
     "grpcio", 
     "protobuf", 
     "grpcio-tools", 
-    "configparser" 
+    "configparser",
+    "redis"
 ]

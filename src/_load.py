@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimZhang
 # @Date:   2019-02-24 05:05:50
-# @Last Modified by:   JimZhang
-# @Last Modified time: 2019-03-12 23:25:12
+# @Last Modified by:   JinZhang
+# @Last Modified time: 2019-03-15 11:06:02
 import os;
 import sys;
 import time;
@@ -18,7 +18,7 @@ if os.path.join(CURRENT_PATH, "core") not in sys.path:
 import _Global as _G;
 from function.base import *;
 from net.proto import common_pb2_grpc;
-from dbc.DBCManager import DBCManager;
+from dbc import DBCManager;
 
 from behaviorCore.BaseBehavior import BaseBehavior;
 from behaviorCore.BehaviorManager import BehaviorManager;
@@ -33,12 +33,12 @@ class Loader(object):
 		pass;
 
 	def loadMainServer(self):
-		SrvConf = _G._GG("ServerConfig").Config(); # 服务配置
-		grpcServer = grpc.server(futures.ThreadPoolExecutor(max_workers = int(SrvConf.Get("server", "max_workers")))); # 最多有多少work并行执行任务
+		srvConf = _G._GG("ServerConfig").Config(); # 服务配置
+		grpcServer = grpc.server(futures.ThreadPoolExecutor(max_workers = int(srvConf.Get("server", "max_workers")))); # 最多有多少work并行执行任务
 		commonServer = require(CURRENT_PATH, "server", "CommonServer")(); # 获取服务器对象
 		common_pb2_grpc.add_CommonServicer_to_server(commonServer, grpcServer); # 添加函数方法和服务器，服务器端会进行反序列化。
-		print(":".join([SrvConf.Get("server", "host"), SrvConf.Get("server", "port")]));
-		grpcServer.add_insecure_port(":".join([SrvConf.Get("server", "host"), SrvConf.Get("server", "port")])); # 建立服务器和端口
+		print(":".join([srvConf.Get("server", "host"), srvConf.Get("server", "port")]));
+		grpcServer.add_insecure_port(":".join([srvConf.Get("server", "host"), srvConf.Get("server", "port")])); # 建立服务器和端口
 		# 设置注册及注销方法
 		grpcServer.registerMethod = commonServer.registerMethod;
 		grpcServer.unregisterMethod = commonServer.unregisterMethod;
@@ -51,14 +51,14 @@ class Loader(object):
 		require(CURRENT_PATH, "server", "ExtendSrvMethod")();
 
 	def loadLogger(self):
-		SrvConf = _G._GG("ServerConfig").Config(); # 服务配置
-		path = SrvConf.Get("log", "path", "").replace("\\", "/");
+		srvConf = _G._GG("ServerConfig").Config(); # 服务配置
+		path = srvConf.Get("log", "path", "").replace("\\", "/");
 		if len(path) > 0 and path[-1] != "/":
 			path += "/";
-		name = SrvConf.Get("log", "name", "PyToolsIP");
+		name = srvConf.Get("log", "name", "PyToolsIP");
 		curTimeStr = time.strftime("%Y_%m_%d", time.localtime());
 		logger = Logger("Common", isLogFile = True, logFileName = "".join([_G._GG("g_ProjectPath"), path, name, "_%s.log"%curTimeStr]),
-			maxBytes = int(SrvConf.Get("log", "maxBytes")), backupCount = int(SrvConf.Get("log", "backupCount")));
+			maxBytes = int(srvConf.Get("log", "maxBytes")), backupCount = int(srvConf.Get("log", "backupCount")));
 		_G.setGlobalVarTo_Global("Log", logger); # 设置日志类的全局变量
 		return logger;
 
