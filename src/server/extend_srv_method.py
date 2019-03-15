@@ -2,7 +2,7 @@
 # @Author: JimZhang
 # @Date:   2019-03-01 21:16:40
 # @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-15 19:36:43
+# @Last Modified time: 2019-03-15 19:39:47
 import random;
 import smtplib;
 from email.mime.text import MIMEText;
@@ -48,8 +48,7 @@ def VertifyVerificationCode(data, context):
 	if "email" not in data or "code" not in data:
 		return False, {};
 	# 校验验证码
-	if _GG("DBCManager").Redis().hexists("verification_code", data["email"])
-	 and _GG("DBCManager").Redis().hget("verification_code", data["email"]) == data["code"]:
+	if _GG("DBCManager").Redis().hexists("verification_code", data["email"]) and _GG("DBCManager").Redis().hget("verification_code", data["email"]) == data["code"]:
 		return True, {};
 	return False, {};
 
