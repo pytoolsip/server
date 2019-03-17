@@ -1,3 +1,3 @@
 #！/bin/sh
 
-python verify.py
+python src/build.py
