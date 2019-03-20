@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimZhang
 # @Date:   2019-03-01 21:16:40
-# @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-15 19:39:47
+# @Last Modified by:   JimDreamHeart
+# @Last Modified time: 2019-03-21 00:02:38
 import random;
 import smtplib;
 from email.mime.text import MIMEText;
@@ -22,18 +22,23 @@ def ExtendSrvMethod():
 def RequestToolInfos(data, context):
 	sql = "SELECT tool.name, version, description, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE common_version = '%s'"%data.get("commonVersion", "");
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
-	if not ret:
-		return False, [];
-	return True, [{
-		"title" : info["name"],
-		"version" : info["version"],
-		"detail" : info["description"],
-		"userName" : info["user.name"],
-	} for info in retData];
+	if ret:
+		return True, [{
+			"title" : info["name"],
+			"version" : info["version"],
+			"detail" : info["description"],
+			"userName" : info["user.name"],
+		} for info in retData];
+	return False, [];
 
 def VertifyToolName(data, context):
-	sql = "SELECT id FROM tool WHERE name = '%s' AND common_version = '%s'"%(data.get("name", ""), data.get("commonVersion", ""));
-	return _GG("DBCManager").MySQL().execute(sql);
+	sql = "SELECT uid,version FROM tool WHERE name = '%s' AND common_version = '%s'"%(data.get("name", ""), data.get("commonVersion", ""));
+	ret,retData = _GG("DBCManager").MySQL().execute(sql);
+	if ret:
+		if retData[0]["uid"] == data.get("uid", -1):
+			return True, {"version" : retData[0]["version"]};
+		return False, {}; # 校验失败，存在相同工具名，却不同玩家的工具数据
+	return True, {};
 
 def VertifyUserName(data, context):
 	sql = "SELECT id FROM user WHERE name = '%s'"%data.get("name", "");
