@@ -2,7 +2,7 @@
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-23 21:05:19
+# @Last Modified time: 2019-03-23 21:45:09
 import os,json,time;
 import hashlib;
 
@@ -34,8 +34,16 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			};
 		return common_pb2.Resp(**retDate);
 
-	def splitVersion(self, version):
+	def _splitVersion_(self, version):
 		return [int(ver) for ver in version.replace(" ", "").split(".") if ver.isdigit()];
+
+	def _getFileName_(self, name, version = "", suffix = ""):
+		name = hashlib.md5(str.encode(name)).hexdigest();
+		if version != "":
+			version = "_" + version;
+		if suffix != "":
+			suffix = "." + suffix;
+		return "".join([name, version, suffix]);
 	
 	def Login(self, request, context):
 		sql = "SELECT * FROM user WHERE name = '%s' AND password = '%s'"%(request.name, request.password);
@@ -67,7 +75,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 判断请求信息是否正确
-		toolVerList = self.splitVersion(request.version);
+		toolVerList = self._splitVersion_(request.version);
 		if len(toolVerList) != 3:
 			return common_pb2.UpdateResp(isPermit = False);
 		# 判断数据库是否已有相应工具名，并校验所要上传工具版本号是否为最新
@@ -75,10 +83,10 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
 			for toolInfo in results:
-				verList = self.splitVersion(toolInfo["version"]);
+				verList = self._splitVersion_(toolInfo["version"]);
 				if verList[1] > toolVerList[1] or (verList[1] == toolVerList[1] and verList[2] >= toolVerList[2]):
 					return common_pb2.UploadResp(isPermit = False);
-			fileName = "%s_%s.zip"%(hashlib.md5(str.encode(request.name)).hexdigest(), request.version);
+			fileName = self._getFileName_(request.name, request.version, "zip");
 			tokenStr = json.dumps({
 				"host" : _GG("ServerConfig").Config().Get("server", "remote_host"),
 				"port" : _GG("ServerConfig").Config().Get("server", "remote_port"),
@@ -96,11 +104,11 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 判断上传信息是否正确
-		toolVerList = self.splitVersion(request.version);
+		toolVerList = self._splitVersion_(request.version);
 		if len(toolVerList) != 3:
 			return common_pb2.Resp(isSuccess = False);
 		# 获取文件地址
-		fileName = "%s_%s.zip"%(hashlib.md5(str.encode(request.name)).hexdigest(), request.version);
+		fileName = self._getFileName_(request.name, request.version, "zip");
 		filePath = os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName);
 		# 校验上传的文件是否存在
 		if not os.path.exists(filePath):
@@ -121,7 +129,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		sql = "SELECT id FROM tool WHERE name = '%s' AND version = '%s'"%(request.name, request.version);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
-			fileName = "%s_%s.zip"%(hashlib.md5(str.encode(request.name)).hexdigest(), request.version);
+			fileName = self._getFileName_(request.name, request.version, "zip");
 			totalSize = os.path.getsize(os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName));
 			url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
 			return common_pb2.DownloadResp(isExist = True, url = url, totalSize = totalSize);
@@ -129,7 +137,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 
 	def Update(self, request, context):
 		# 判断请求信息是否正确
-		toolVerList = self.splitVersion(request.version);
+		toolVerList = self._splitVersion_(request.version);
 		if len(toolVerList) != 3:
 			return common_pb2.UpdateResp(isUpToDate = True);
 		# 找到对应common版本的下载链接
@@ -137,9 +145,9 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			for toolInfo in results:
-				verList = self.splitVersion(toolInfo["version"]);
+				verList = self._splitVersion_(toolInfo["version"]);
 				if verList[1] > toolVerList[1] or (verList[1] == toolVerList[1] and verList[2] >= toolVerList[2]):
-					fileName = "%s_%s.zip"%(hashlib.md5(str.encode(request.name)).hexdigest(), request.version);
+					fileName = self._getFileName_(request.name, request.version, "zip");
 					totalSize = os.path.getsize(os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName));
 					url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
 					return common_pb2.UpdateResp(isUpToDate = False, 
