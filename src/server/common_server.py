@@ -2,7 +2,7 @@
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-23 17:43:24
+# @Last Modified time: 2019-03-23 19:32:47
 import os,json,time;
 
 from _Global import _GG;
@@ -79,7 +79,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 					return common_pb2.UploadResp(isPermit = False);
 			tokenStr = json.dumps({
 				"host" : _GG("ServerConfig").Config().Get("server", "remote_host"),
-				"port" : _GG("ServerConfig").Config().Get("server", "port"),
+				"port" : _GG("ServerConfig").Config().Get("server", "remote_port"),
 				"user" : _GG("ServerConfig").Config().Get("upload", "user"),
 				"password" : _GG("ServerConfig").Config().Get("upload", "password"),
 				"url" : os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), "%s_%s.zip"%(request.name, request.version)),
