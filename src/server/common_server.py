@@ -2,8 +2,9 @@
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-23 19:32:47
+# @Last Modified time: 2019-03-23 21:05:19
 import os,json,time;
+import hashlib;
 
 from _Global import _GG;
 from net.proto import common_pb2,common_pb2_grpc;
@@ -77,12 +78,13 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 				verList = self.splitVersion(toolInfo["version"]);
 				if verList[1] > toolVerList[1] or (verList[1] == toolVerList[1] and verList[2] >= toolVerList[2]):
 					return common_pb2.UploadResp(isPermit = False);
+			fileName = "%s_%s.zip"%(hashlib.md5(str.encode(request.name)).hexdigest(), request.version);
 			tokenStr = json.dumps({
 				"host" : _GG("ServerConfig").Config().Get("server", "remote_host"),
 				"port" : _GG("ServerConfig").Config().Get("server", "remote_port"),
 				"user" : _GG("ServerConfig").Config().Get("upload", "user"),
 				"password" : _GG("ServerConfig").Config().Get("upload", "password"),
-				"url" : os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), "%s_%s.zip"%(request.name, request.version)),
+				"url" : os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName),
 			});
 			return common_pb2.UploadResp(isPermit = True, token = str.encode(tokenStr));
 		return common_pb2.UploadResp(isPermit = False);
@@ -98,7 +100,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if len(toolVerList) != 3:
 			return common_pb2.Resp(isSuccess = False);
 		# 获取文件地址
-		fileName = "%s_%s.zip"%(request.name, request.version);
+		fileName = "%s_%s.zip"%(hashlib.md5(str.encode(request.name)).hexdigest(), request.version);
 		filePath = os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName);
 		# 校验上传的文件是否存在
 		if not os.path.exists(filePath):
@@ -119,7 +121,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		sql = "SELECT id FROM tool WHERE name = '%s' AND version = '%s'"%(request.name, request.version);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
-			fileName = "%s_%s.zip"%(request.name, request.version);
+			fileName = "%s_%s.zip"%(hashlib.md5(str.encode(request.name)).hexdigest(), request.version);
 			totalSize = os.path.getsize(os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName));
 			url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
 			return common_pb2.DownloadResp(isExist = True, url = url, totalSize = totalSize);
@@ -137,7 +139,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			for toolInfo in results:
 				verList = self.splitVersion(toolInfo["version"]);
 				if verList[1] > toolVerList[1] or (verList[1] == toolVerList[1] and verList[2] >= toolVerList[2]):
-					fileName = "%s_%s.zip"%(request.name, request.version);
+					fileName = "%s_%s.zip"%(hashlib.md5(str.encode(request.name)).hexdigest(), request.version);
 					totalSize = os.path.getsize(os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName));
 					url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
 					return common_pb2.UpdateResp(isUpToDate = False, 
