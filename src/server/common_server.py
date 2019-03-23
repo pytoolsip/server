@@ -2,7 +2,7 @@
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-23 21:45:09
+# @Last Modified time: 2019-03-23 22:02:48
 import os,json,time;
 import hashlib;
 
@@ -38,7 +38,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		return [int(ver) for ver in version.replace(" ", "").split(".") if ver.isdigit()];
 
 	def _getFileName_(self, name, version = "", suffix = ""):
-		name = hashlib.md5(str.encode(name)).hexdigest();
+		name = hashlib.md5(name.encode("utf-8")).hexdigest();
 		if version != "":
 			version = "_" + version;
 		if suffix != "":
