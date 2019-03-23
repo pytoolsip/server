@@ -2,7 +2,7 @@
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-16 03:41:31
+# @Last Modified time: 2019-03-23 15:40:05
 import os,json,time;
 
 from _Global import _GG;
@@ -74,7 +74,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if len(toolVerList) != 3:
 			return common_pb2.UpdateResp(isPermit = False);
 		# 判断数据库是否已有相应工具名，并校验所要上传工具版本号是否为最新
-		sql = "SELECT version FROM tool WHERE name = '%s' AND common_version = '%s'"%(request.name, request.commonVersion);
+		sql = "SELECT version FROM tool WHERE category = '%s' AND name = '%s' AND common_version = '%s'"%(request.category, request.name, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
 			for toolInfo in results:
@@ -86,7 +86,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 				"port" : _GG("ServerConfig").Config().Get("server", "port"),
 				"user" : _GG("ServerConfig").Config().Get("upload", "user"),
 				"password" : _GG("ServerConfig").Config().Get("upload", "password"),
-				"fileName" : "%s_%s.zip"%(request.name, request.version),
+				"url" : os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), "%s_%s.zip"%(request.name, request.version)),
 			});
 			return common_pb2.UploadResp(isPermit = True, token = str.encode(tokenStr));
 		return common_pb2.UploadResp(isPermit = False);
@@ -109,8 +109,8 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			return common_pb2.Resp(isSuccess = False);
 		# 插入工具信息到数据库中
 		url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
-		sql = "INSERT INTO tool(uid, name, version, common_version, description, url, time) VALUES(%d, '%s', '%s', '%s', '%s', '%s', '%s')"%(
-			request.uid, request.name, request.version, request.commonVersion, request.description,
+		sql = "INSERT INTO tool(uid, category, name, version, common_version, description, url, time) VALUES(%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')"%(
+			request.uid, request.category, request.name, request.version, request.commonVersion, request.description,
 			url, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()));
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:

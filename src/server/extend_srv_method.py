@@ -2,7 +2,7 @@
 # @Author: JimZhang
 # @Date:   2019-03-01 21:16:40
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-21 00:02:38
+# @Last Modified time: 2019-03-23 15:27:21
 import random;
 import smtplib;
 from email.mime.text import MIMEText;
@@ -32,7 +32,7 @@ def RequestToolInfos(data, context):
 	return False, [];
 
 def VertifyToolName(data, context):
-	sql = "SELECT uid,version FROM tool WHERE name = '%s' AND common_version = '%s'"%(data.get("name", ""), data.get("commonVersion", ""));
+	sql = "SELECT uid,version FROM tool WHERE category = '%s' AND name = '%s' AND common_version = '%s'"%(data.get("category", ""), data.get("name", ""), data.get("commonVersion", ""));
 	ret,retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
 		if retData[0]["uid"] == data.get("uid", -1):
