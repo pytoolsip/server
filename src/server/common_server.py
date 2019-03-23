@@ -2,7 +2,7 @@
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-23 15:40:05
+# @Last Modified time: 2019-03-23 17:43:24
 import os,json,time;
 
 from _Global import _GG;
@@ -34,11 +34,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		return common_pb2.Resp(**retDate);
 
 	def splitVersion(self, version):
-		vers = version.split(".");
-		verList = [];
-		for ver in vers:
-			verList.append(int(ver));
-		return verList;
+		return [int(ver) for ver in version.replace(" ", "").split(".") if ver.isdigit()];
 	
 	def Login(self, request, context):
 		sql = "SELECT * FROM user WHERE name = '%s' AND password = '%s'"%(request.name, request.password);
@@ -82,7 +78,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 				if verList[1] > toolVerList[1] or (verList[1] == toolVerList[1] and verList[2] >= toolVerList[2]):
 					return common_pb2.UploadResp(isPermit = False);
 			tokenStr = json.dumps({
-				"host" : _GG("ServerConfig").Config().Get("server", "host"),
+				"host" : _GG("ServerConfig").Config().Get("server", "remote_host"),
 				"port" : _GG("ServerConfig").Config().Get("server", "port"),
 				"user" : _GG("ServerConfig").Config().Get("upload", "user"),
 				"password" : _GG("ServerConfig").Config().Get("upload", "password"),
