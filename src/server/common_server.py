@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
-# @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-23 22:02:48
+# @Last Modified by:   JimZhang
+# @Last Modified time: 2019-03-24 12:25:02
 import os,json,time;
 import hashlib;
 
@@ -37,13 +37,21 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 	def _splitVersion_(self, version):
 		return [int(ver) for ver in version.replace(" ", "").split(".") if ver.isdigit()];
 
-	def _getFileName_(self, name, version = "", suffix = ""):
+	def _getFileName_(self, name, category = "", version = "", suffix = ""):
+		if category:
+			name = self.__verifyCategory__(category) + name;
 		name = hashlib.md5(name.encode("utf-8")).hexdigest();
 		if version != "":
 			version = "_" + version;
 		if suffix != "":
 			suffix = "." + suffix;
 		return "".join([name, version, suffix]);
+
+	def __verifyCategory__(self, category):
+		category = category.replace(" ", "");
+		if len(category) > 0 and category[-1] != "/":
+			category += "/";
+		return category;
 	
 	def Login(self, request, context):
 		sql = "SELECT * FROM user WHERE name = '%s' AND password = '%s'"%(request.name, request.password);
@@ -79,7 +87,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if len(toolVerList) != 3:
 			return common_pb2.UpdateResp(isPermit = False);
 		# 判断数据库是否已有相应工具名，并校验所要上传工具版本号是否为最新
-		sql = "SELECT version FROM tool WHERE category = '%s' AND name = '%s' AND common_version = '%s'"%(request.category, request.name, request.commonVersion);
+		sql = "SELECT version FROM tool WHERE category = '%s' AND name = '%s' AND common_version = '%s'"%(self.__verifyCategory__(request.category), request.name, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
 			for toolInfo in results:
@@ -116,7 +124,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		# 插入工具信息到数据库中
 		url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
 		sql = "INSERT INTO tool(uid, category, name, version, common_version, description, url, time) VALUES(%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')"%(
-			request.uid, request.category, request.name, request.version, request.commonVersion, request.description,
+			request.uid, self.__verifyCategory__(request.category), request.name, request.version, request.commonVersion, request.description,
 			url, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()));
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
