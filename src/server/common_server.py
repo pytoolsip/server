@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
-# @Last Modified by:   JimZhang
-# @Last Modified time: 2019-03-24 12:25:02
+# @Last Modified by:   JinZhang
+# @Last Modified time: 2019-03-27 18:34:16
 import os,json,time;
 import hashlib;
 
@@ -37,15 +37,16 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 	def _splitVersion_(self, version):
 		return [int(ver) for ver in version.replace(" ", "").split(".") if ver.isdigit()];
 
-	def _getFileName_(self, name, category = "", version = "", suffix = ""):
-		if category:
-			name = self.__verifyCategory__(category) + name;
-		name = hashlib.md5(name.encode("utf-8")).hexdigest();
-		if version != "":
+	def _getFileName_(self, key = "", name = "", category = "", version = "", suffix = ""):
+		if not key:
+			if category:
+				name = self.__verifyCategory__(category) + name;
+			key = hashlib.md5(name.encode("utf-8")).hexdigest();
+		if version:
 			version = "_" + version;
-		if suffix != "":
+		if suffix and suffix[0] != ".":
 			suffix = "." + suffix;
-		return "".join([name, version, suffix]);
+		return "".join([key, version, suffix]);
 
 	def __verifyCategory__(self, category):
 		category = category.replace(" ", "");
@@ -94,7 +95,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 				verList = self._splitVersion_(toolInfo["version"]);
 				if verList[1] > toolVerList[1] or (verList[1] == toolVerList[1] and verList[2] >= toolVerList[2]):
 					return common_pb2.UploadResp(isPermit = False);
-			fileName = self._getFileName_(request.name, request.version, "zip");
+			fileName = self._getFileName_(name = request.name, category = request.category, version = request.version, suffix = "zip");
 			tokenStr = json.dumps({
 				"host" : _GG("ServerConfig").Config().Get("server", "remote_host"),
 				"port" : _GG("ServerConfig").Config().Get("server", "remote_port"),
@@ -116,15 +117,16 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if len(toolVerList) != 3:
 			return common_pb2.Resp(isSuccess = False);
 		# 获取文件地址
-		fileName = self._getFileName_(request.name, request.version, "zip");
+		fileName = self._getFileName_(name = request.name, category = request.category, version = request.version, suffix = "zip");
 		filePath = os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName);
 		# 校验上传的文件是否存在
 		if not os.path.exists(filePath):
 			return common_pb2.Resp(isSuccess = False);
 		# 插入工具信息到数据库中
 		url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
-		sql = "INSERT INTO tool(uid, category, name, version, common_version, description, url, time) VALUES(%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')"%(
-			request.uid, self.__verifyCategory__(request.category), request.name, request.version, request.commonVersion, request.description,
+		sql = "INSERT INTO tool(uid, key, category, name, version, common_version, description, url, time) VALUES(%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')"%(
+			request.uid, self._getFileName_(name = request.name, category = request.category), self.__verifyCategory__(request.category),
+			request.name, request.version, request.commonVersion, request.description,
 			url, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()));
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
@@ -134,13 +136,14 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 	def Download(self, request, context):
 		# 校验玩家下载请求权限[request.uid]
 		# 获取下载数据
-		sql = "SELECT id FROM tool WHERE name = '%s' AND version = '%s'"%(request.name, request.version);
+		sql = "SELECT key, version FROM tool WHERE name = '%s' AND category = '%s' AND common_version = '%s'"%(request.name, self.__verifyCategory__(request.category), request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
-			fileName = self._getFileName_(request.name, request.version, "zip");
-			totalSize = os.path.getsize(os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName));
-			url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
-			return common_pb2.DownloadResp(isExist = True, url = url, totalSize = totalSize);
+			fileName = self._getFileName_(key = results[0]["key"], version = results[0]["version"], suffix = "zip");
+			filePath = os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName);
+			if os.path.exists(filePath):
+				url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
+				return common_pb2.DownloadResp(isExist = True, url = url, totalSize = os.path.getsize(filePath));
 		return common_pb2.DownloadResp(isExist = False);
 
 	def Update(self, request, context):
@@ -149,17 +152,18 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if len(toolVerList) != 3:
 			return common_pb2.UpdateResp(isUpToDate = True);
 		# 找到对应common版本的下载链接
-		sql = "SELECT version FROM tool WHERE name = '%s' AND common_version = '%s'"%(request.name, request.commonVersion);
+		sql = "SELECT version FROM tool WHERE key = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			for toolInfo in results:
 				verList = self._splitVersion_(toolInfo["version"]);
 				if verList[1] > toolVerList[1] or (verList[1] == toolVerList[1] and verList[2] >= toolVerList[2]):
-					fileName = self._getFileName_(request.name, request.version, "zip");
-					totalSize = os.path.getsize(os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName));
-					url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
-					return common_pb2.UpdateResp(isUpToDate = False, 
-						updateInfo = common_pb2.DownloadResp(isExist = True, url = url, totalSize = totalSize));
+					fileName = self._getFileName_(key = request.key, version = toolInfo["version"], suffix = "zip");
+					filePath = os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName);
+					if os.path.exists(filePath):
+						url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
+						return common_pb2.UpdateResp(isUpToDate = False, 
+							updateInfo = common_pb2.DownloadResp(isExist = True, url = url, totalSize = os.path.getsize(filePath)));
 		return common_pb2.UpdateResp(isUpToDate = True);
 
 	def Comment(self, request, context):
@@ -169,18 +173,16 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 校验所传用户ID数据
-		sql = "SELECT id FROM tool WHERE name = '%s' AND version = '%s' AND common_version = '%s'"%(request.name, request.version, request.commonVersion);
-		ret, results = _GG("DBCManager").MySQL().execute(sql);
-		if not ret:
-			return common_pb2.Resp(isSuccess = False);
-		# 插入评论信息到数据库中
-		tid = results[0]["id"];
-		sql = "INSERT INTO tool(uid, tid, score, content, time) VALUES(%d, %d, %.1f, '%s', '%s')"%(
-			request.uid, tid, request.score, request.content,
-			time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()));
+		sql = "SELECT id FROM tool WHERE key = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
-			return common_pb2.Resp(isSuccess = True);
+			# 插入评论信息到数据库中
+			sql = "INSERT INTO comment(uid, tkey, version, score, content, time) VALUES(%d, %d, %.1f, '%s', '%s')"%(
+				request.uid, request.key, request.version, request.score, request.content,
+				time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()));
+			ret, results = _GG("DBCManager").MySQL().execute(sql);
+			if ret:
+				return common_pb2.Resp(isSuccess = True);
 		return common_pb2.Resp(isSuccess = False);
 
 	def Collect(self, request, context):
@@ -190,14 +192,12 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 校验所传用户ID数据
-		sql = "SELECT id FROM tool WHERE name = '%s' AND version = '%s' AND common_version = '%s'"%(request.name, request.version, request.commonVersion);
-		ret, results = _GG("DBCManager").MySQL().execute(sql);
-		if not ret:
-			return common_pb2.Resp(isSuccess = False);
-		# 插入评论信息到数据库中
-		tid = results[0]["id"];
-		sql = "INSERT INTO tool(uid, tid) VALUES(%d, %d)"%(request.uid, tid);
+		sql = "SELECT id FROM tool WHERE key = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
-			return common_pb2.Resp(isSuccess = True);
+			# 插入收藏信息到数据库中
+			sql = "INSERT INTO collection(uid, tkey) VALUES(%d, %d)"%(request.uid, request.key);
+			ret, results = _GG("DBCManager").MySQL().execute(sql);
+			if ret:
+				return common_pb2.Resp(isSuccess = True);
 		return common_pb2.Resp(isSuccess = False);
