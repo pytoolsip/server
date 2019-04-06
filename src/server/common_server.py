@@ -2,7 +2,7 @@
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-04-06 11:15:02
+# @Last Modified time: 2019-04-06 11:22:02
 import os,json,time;
 import hashlib;
 
@@ -136,7 +136,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 	def Download(self, request, context):
 		# 校验玩家下载请求权限[request.uid]
 		# 获取下载数据
-		sql = "SELECT tool.name, category, description, version, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE key = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
+		sql = "SELECT tool.name, category, description, version, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			result = results[0];
@@ -156,7 +156,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if len(toolVerList) != 3:
 			return common_pb2.UpdateResp(isUpToDate = True);
 		# 找到对应common版本的下载链接
-		sql = "SELECT version FROM tool WHERE key = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
+		sql = "SELECT version FROM tool WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			for toolInfo in results:
@@ -177,7 +177,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 校验所传用户ID数据
-		sql = "SELECT id FROM tool WHERE key = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
+		sql = "SELECT id FROM tool WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			# 插入评论信息到数据库中
@@ -196,7 +196,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 校验所传用户ID数据
-		sql = "SELECT id FROM tool WHERE key = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
+		sql = "SELECT id FROM tool WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			# 插入收藏信息到数据库中

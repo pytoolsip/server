@@ -2,7 +2,7 @@
 # @Author: JimZhang
 # @Date:   2019-03-01 21:16:40
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-04-06 11:15:13
+# @Last Modified time: 2019-04-06 11:22:36
 import random;
 import smtplib;
 from email.mime.text import MIMEText;
@@ -24,7 +24,7 @@ def RequestToolInfos(data, context):
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
 		return True, [{
-			"key" : info["key"],
+			"key" : info["tkey"],
 			"title" : info["name"],
 			"category" : info["category"],
 			"description" : info["description"],
@@ -92,7 +92,7 @@ def sendEmailContent(email, title, content):
 		smtpObj.quit();
 
 def RequestToolInfo(data, context):
-	sql = "SELECT tool.name, category, description, version, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE key = '%s' AND common_version = '%s'"%(data.get("key", ""), data.get("commonVersion", ""));
+	sql = "SELECT tool.name, category, description, version, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND common_version = '%s'"%(data.get("key", ""), data.get("commonVersion", ""));
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
 		return True, [{
