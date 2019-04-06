@@ -2,7 +2,7 @@
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-04-06 10:59:48
+# @Last Modified time: 2019-04-06 11:15:02
 import os,json,time;
 import hashlib;
 
@@ -124,7 +124,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			return common_pb2.Resp(isSuccess = False);
 		# 插入工具信息到数据库中
 		url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
-		sql = "INSERT INTO tool(uid, key, category, name, version, common_version, description, url, time) VALUES(%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')"%(
+		sql = "INSERT INTO tool(uid, tkey, category, name, version, common_version, description, url, time) VALUES(%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')"%(
 			request.uid, self._getFileName_(name = request.name, category = request.category), self.__verifyCategory__(request.category),
 			request.name, request.version, request.commonVersion, request.description,
 			url, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()));

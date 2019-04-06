@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimZhang
 # @Date:   2019-03-01 21:16:40
-# @Last Modified by:   JimZhang
-# @Last Modified time: 2019-04-06 10:03:13
+# @Last Modified by:   JimDreamHeart
+# @Last Modified time: 2019-04-06 11:15:13
 import random;
 import smtplib;
 from email.mime.text import MIMEText;
@@ -20,7 +20,7 @@ def ExtendSrvMethod():
 	pass;
 
 def RequestToolInfos(data, context):
-	sql = "SELECT tool.name, category, key, description, version, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE common_version = '%s'"%data.get("commonVersion", "");
+	sql = "SELECT tool.name, category, tkey, description, version, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE common_version = '%s'"%data.get("commonVersion", "");
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
 		return True, [{
