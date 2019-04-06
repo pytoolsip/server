@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
-# @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-27 18:34:16
+# @Last Modified by:   JimDreamHeart
+# @Last Modified time: 2019-04-06 10:59:48
 import os,json,time;
 import hashlib;
 
@@ -136,14 +136,18 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 	def Download(self, request, context):
 		# 校验玩家下载请求权限[request.uid]
 		# 获取下载数据
-		sql = "SELECT key, version FROM tool WHERE name = '%s' AND category = '%s' AND common_version = '%s'"%(request.name, self.__verifyCategory__(request.category), request.commonVersion);
+		sql = "SELECT tool.name, category, description, version, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE key = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
-			fileName = self._getFileName_(key = results[0]["key"], version = results[0]["version"], suffix = "zip");
+			result = results[0];
+			fileName = self._getFileName_(key = request.key, version = result["version"], suffix = "zip");
 			filePath = os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName);
 			if os.path.exists(filePath):
 				url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
-				return common_pb2.DownloadResp(isExist = True, url = url, totalSize = os.path.getsize(filePath));
+				namePath = "/".join(result["category"], )
+				return common_pb2.DownloadResp(isExist = True, url = url, totalSize = os.path.getsize(filePath),
+				 toolInfo = common_pb2.DownloadResp.ToolInfo(name = result["name"], category = result["category"],
+				 	description = result["description"], version = result["version"], author = result["author"]));
 		return common_pb2.DownloadResp(isExist = False);
 
 	def Update(self, request, context):

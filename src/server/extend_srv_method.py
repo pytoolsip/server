@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimZhang
 # @Date:   2019-03-01 21:16:40
-# @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-23 15:27:21
+# @Last Modified by:   JimZhang
+# @Last Modified time: 2019-04-06 10:03:13
 import random;
 import smtplib;
 from email.mime.text import MIMEText;
@@ -20,14 +20,16 @@ def ExtendSrvMethod():
 	pass;
 
 def RequestToolInfos(data, context):
-	sql = "SELECT tool.name, version, description, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE common_version = '%s'"%data.get("commonVersion", "");
+	sql = "SELECT tool.name, category, key, description, version, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE common_version = '%s'"%data.get("commonVersion", "");
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
 		return True, [{
+			"key" : info["key"],
 			"title" : info["name"],
+			"category" : info["category"],
+			"description" : info["description"],
 			"version" : info["version"],
-			"detail" : info["description"],
-			"userName" : info["user.name"],
+			"author" : info["user.name"],
 		} for info in retData];
 	return False, [];
 
@@ -88,3 +90,16 @@ def sendEmailContent(email, title, content):
 		return False;
 	finally:
 		smtpObj.quit();
+
+def RequestToolInfo(data, context):
+	sql = "SELECT tool.name, category, description, version, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE key = '%s' AND common_version = '%s'"%(data.get("key", ""), data.get("commonVersion", ""));
+	ret, retData = _GG("DBCManager").MySQL().execute(sql);
+	if ret:
+		return True, [{
+			"title" : info["name"],
+			"category" : info["category"],
+			"description" : info["description"],
+			"version" : info["version"],
+			"author" : info["user.name"],
+		} for info in retData];
+	return False, [];
