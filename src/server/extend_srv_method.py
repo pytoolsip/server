@@ -2,7 +2,7 @@
 # @Author: JimZhang
 # @Date:   2019-03-01 21:16:40
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-04-20 00:13:09
+# @Last Modified time: 2019-04-20 00:17:13
 import random;
 import smtplib;
 from email.mime.text import MIMEText;
@@ -96,11 +96,12 @@ def RequestToolInfo(data, context):
 	sql = "SELECT tool.name, category, description, version, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND common_version = '%s'"%(data.get("key", ""), data.get("commonVersion", ""));
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
-		return True, [{
+		info = retData[0];
+		return True, {
 			"title" : info["name"],
 			"category" : info["category"],
 			"description" : info["description"],
 			"version" : info["version"],
 			"author" : info["user.name"],
-		} for info in retData];
-	return False, [];
+		};
+	return False, {};
