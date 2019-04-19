@@ -2,7 +2,7 @@
 # @Author: JimZhang
 # @Date:   2019-03-01 21:16:40
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-04-06 11:22:36
+# @Last Modified time: 2019-04-20 00:13:09
 import random;
 import smtplib;
 from email.mime.text import MIMEText;
@@ -17,6 +17,7 @@ def ExtendSrvMethod():
 	_GG("MainServer").registerMethod("VertifyUserEmail", VertifyUserEmail);
 	_GG("MainServer").registerMethod("VertifyVerificationCode", VertifyVerificationCode);
 	_GG("MainServer").registerMethod("SendVerificationCode", SendVerificationCode);
+	_GG("MainServer").registerMethod("RequestToolInfo", RequestToolInfo);
 	pass;
 
 def RequestToolInfos(data, context):
