@@ -2,7 +2,7 @@
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-04-19 23:41:37
+# @Last Modified time: 2019-04-20 00:31:29
 import os,json,time;
 import hashlib;
 
@@ -147,7 +147,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 				namePath = "/".join(result["category"], )
 				return common_pb2.DownloadResp(isExist = True, url = url, totalSize = os.path.getsize(filePath),
 				 toolInfo = common_pb2.DownloadResp.ToolInfo(name = result["name"], category = result["category"],
-				 	description = result["description"], version = result["version"], author = result["author"]));
+				 	description = result["description"], version = result["version"], author = result["user.name"]));
 		return common_pb2.DownloadResp(isExist = False);
 
 	def Update(self, request, context):
