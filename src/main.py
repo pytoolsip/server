@@ -23,8 +23,8 @@ if __name__ == '__main__':
 	# 注册服务方法
 	Loader.registerSrvMethod();
 	Log.i("Start server successful！");
-	while True:
-		time.sleep(10*60);
-		break;
-	MainServer.stop(0);
+	# while True:
+	# 	time.sleep(10*60);
+	# 	break;
+	# MainServer.stop(0);
 	Log.i("Stop server successful！");

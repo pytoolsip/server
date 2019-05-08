@@ -1,6 +1,9 @@
 #！/bin/sh
 rm -rf log/*
 
-cd src
+# kill process
+ps -ef | grep 'python3 main.py' | awk '{print $2}' | xargs kill -9
 
-python main.py
+# run process
+cd src
+nohup python3 main.py &
