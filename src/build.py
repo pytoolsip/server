@@ -12,8 +12,8 @@ def verifyDepends():
 		with open(dependJson, "r") as f:
 			dependList = json.loads(f.read());
 			for depend in dependList:
-				if os.system("pip show " + depend) != 0:
-					os.system("pip install " + depend);
+				if os.system("pip3 show " + depend) != 0:
+					os.system("pip3 install " + depend);
 
 if __name__ == '__main__':
 	verifyDepends();
