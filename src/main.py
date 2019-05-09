@@ -2,11 +2,8 @@
 # @Author: JimZhang
 # @Date:   2019-02-23 12:36:46
 # @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-13 20:41:01
+# @Last Modified time: 2019-05-09 19:15:02
 import sys,os,time;
-# 设置默认编码格式
-reload(sys);
-sys.setdefaultencoding('utf-8');
 
 # 加载工程
 from _load import Loader;
@@ -23,8 +20,8 @@ if __name__ == '__main__':
 	# 注册服务方法
 	Loader.registerSrvMethod();
 	Log.i("Start server successful！");
-	# while True:
-	# 	time.sleep(10*60);
-	# 	break;
-	# MainServer.stop(0);
+	while True:
+		time.sleep(10*60);
+		break;
+	MainServer.stop(0);
 	Log.i("Stop server successful！");
