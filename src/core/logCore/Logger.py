@@ -99,6 +99,6 @@ class Logger(logging.Logger):
 		def method(msg, *args, **kwargs):
 			if self.isEnabledFor(LevelKeyMap[level]):
 				def callFunc(func, level, msg, args, kwargs):
-					func(level, msg, *args, **kwargs);
+					func(level, msg, args, **kwargs);
 				threading.Thread(target = callFunc, args = (self._log, LevelKeyMap[level], msg, args, kwargs)).start();
 		return method;
