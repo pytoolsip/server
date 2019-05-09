@@ -21,7 +21,7 @@ if __name__ == '__main__':
 	Loader.registerSrvMethod();
 	Log.i("Start server successful！");
 	while True:
-		time.sleep(10*60);
+		time.sleep(365*24*60*60); # 1年时长
 		break;
 	MainServer.stop(0);
 	Log.i("Stop server successful！");
