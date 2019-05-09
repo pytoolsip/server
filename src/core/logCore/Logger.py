@@ -3,7 +3,7 @@
 # @Date:   2019-03-03 22:54:01
 # @Last Modified by:   JimDreamHeart
 # @Last Modified time: 2019-03-14 20:38:42
-import os,logging;
+import os,logging,threading;
 from logging.handlers import RotatingFileHandler;
 
 from _Global import _GG;
@@ -98,5 +98,7 @@ class Logger(logging.Logger):
 	def __getMethod__(self, level):
 		def method(msg, *args, **kwargs):
 			if self.isEnabledFor(LevelKeyMap[level]):
-				self._log(LevelKeyMap[level], msg, args, **kwargs);
+				def callFunc(func, level, msg, args, kwargs):
+					func(level, msg, *args, **kwargs);
+				threading.Thread(target = callFunc, args = (self._log, LevelKeyMap[level], msg, args, kwargs)).start();
 		return method;
