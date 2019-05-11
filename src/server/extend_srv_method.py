@@ -65,7 +65,7 @@ def SendVerificationCode(data, context):
 	if "email" not in data:
 		return False, {};
 	# 生成六位数验证码
-	code = "".join(random.sample(range(10), 6));
+	code = "".join([str(i) for i in random.sample(range(10), 6)]);
 	# 保存验证码
 	expire = 60; # 有效期：60s
 	_GG("DBCManager").Redis().hset("verification_code", data["email"], code, ex = expire);
