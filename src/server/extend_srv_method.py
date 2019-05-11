@@ -56,7 +56,7 @@ def VertifyVerificationCode(data, context):
 	if "email" not in data or "code" not in data:
 		return False, {};
 	# 校验验证码
-	if _GG("DBCManager").Redis().hexists("verification_code", data["email"]) and _GG("DBCManager").Redis().hget("verification_code", data["email"]) == data["code"]:
+	if _GG("DBCManager").Redis().exists("veri_code_"+data["email"]) and _GG("DBCManager").Redis().get("veri_code_"+data["email"]) == data["code"]:
 		return True, {};
 	return False, {};
 
@@ -68,7 +68,7 @@ def SendVerificationCode(data, context):
 	code = "".join([str(i) for i in random.sample(range(10), 6)]);
 	# 保存验证码
 	expire = 60; # 有效期：60s
-	_GG("DBCManager").Redis().hset("verification_code", data["email"], code, ex = expire);
+	_GG("DBCManager").Redis().set("veri_code_"+data["email"], code, ex = expire);
 	# 发送验证码到指定邮箱
 	return sendEmailContent(data["email"], "PyToolsIp 验证", "验证码："+code), {"expire" : expire};
 

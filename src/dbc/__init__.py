@@ -28,7 +28,7 @@ try:
 		def Redis(self):
 			if not hasattr(self, "__redis"):
 				self.__redis = RedisDB();
-			return self.__redis;
+			return self.__redis();
 except Exception as e:
 	raise e;
 finally:
