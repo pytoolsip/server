@@ -65,7 +65,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 
 	def Register(self, request, context):
 		# 校验验证码
-		if _GG("DBCManager").Redis().hexists("verification_code", request.email) and _GG("DBCManager").Redis().hget("verification_code", request.email) == request.veriCode:
+		if _GG("DBCManager").Redis().exists("veri_code_"+request.email) and _GG("DBCManager").Redis().get("veri_code_"+request.email) == request.veriCode:
 			# 校验提交的信息中是否已存在于数据库中
 			sql = "SELECT id FROM user WHERE name = '%s'"%request.name;
 			ret, results = _GG("DBCManager").MySQL().execute(sql);
