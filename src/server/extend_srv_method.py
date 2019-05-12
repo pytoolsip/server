@@ -79,18 +79,16 @@ def sendEmailContent(email, title, content):
 	message["Subject"] = title;
 	message['From'] = srvConf.Get("email", "user_mail");
 	message['To'] = email;
-	#登录并发送邮件
-	smtpObj = smtplib.SMTP();
-	smtpObj.connect(srvConf.Get("email", "host"), int(srvConf.Get("email", "port")));
-	smtpObj.login(srvConf.Get("email", "user_mail"), srvConf.Get("email", "password"));
 	try:
+		#登录并发送邮件
+		smtpObj = smtplib.SMTP_SSL(srvConf.Get("email", "host"), int(srvConf.Get("email", "port")));
+		smtpObj.login(srvConf.Get("email", "user_mail"), srvConf.Get("email", "password"));
 		smtpObj.sendmail(srvConf.Get("email", "user_mail"), [email], message.as_string());
-		return True;
-	except Exception as e:
-		_GG("Log").e("Send mail failed ! =>", e);
-		return False;
-	finally:
 		smtpObj.quit();
+		return True;
+	except smtplib.SMTPException as e:
+		_GG("Log").e("Send mail failed ! =>", e);
+	return False;
 
 def RequestToolInfo(data, context):
 	sql = "SELECT tool.name, category, description, version, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND common_version = '%s'"%(data.get("key", ""), data.get("commonVersion", ""));
