@@ -67,7 +67,7 @@ def SendVerificationCode(data, context):
 	# 生成六位数验证码
 	code = "".join([str(i) for i in random.sample(range(10), 6)]);
 	# 保存验证码
-	expire = 60; # 有效期：60s
+	expire = int(_GG("ServerConfig").Config().Get("email", "expire", 60)); # 默认有效期：60s
 	_GG("DBCManager").Redis().set("veri_code_"+data["email"], code, ex = expire);
 	# 发送验证码到指定邮箱
 	return sendEmailContent(data["email"], "PyToolsIp 验证", "验证码："+code), {"expire" : expire};
