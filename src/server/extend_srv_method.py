@@ -3,6 +3,7 @@
 # @Date:   2019-03-01 21:16:40
 # @Last Modified by:   JimDreamHeart
 # @Last Modified time: 2019-04-20 00:17:13
+import hashlib;
 import random;
 import smtplib;
 from email.mime.text import MIMEText;
@@ -35,12 +36,15 @@ def RequestToolInfos(data, context):
 	return False, [];
 
 def VertifyToolName(data, context):
-	sql = "SELECT uid,version FROM tool WHERE category = '%s' AND name = '%s' AND common_version = '%s'"%(data.get("category", ""), data.get("name", ""), data.get("commonVersion", ""));
+	if not data.get("fullName", None):
+		return False, {"tips" : "校验字段不正确！"}; # 校验失败，不存在校验数据
+	tkey = hashlib.md5(data["fullName"].encode("utf-8")).hexdigest();
+	sql = "SELECT uid,version FROM tool WHERE tkey = '%s'"%tkey;
 	ret,retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
 		if retData[0]["uid"] == data.get("uid", -1):
 			return True, {"version" : retData[0]["version"]};
-		return False, {}; # 校验失败，存在相同工具名，却不同玩家的工具数据
+		return False, {"tips" : "已存在相同工具名，且您不是此工具的提交者，不允许上传该名称的工具！"}; # 校验失败，存在相同工具名，却不同玩家的工具数据
 	return True, {};
 
 def VertifyUserName(data, context):
