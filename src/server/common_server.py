@@ -37,13 +37,13 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 	def _splitVersion_(self, version):
 		return [int(ver) for ver in version.replace(" ", "").split(".") if ver.isdigit()];
 
-	def _getFileName_(self, key = "", name = "", category = "", version = "", suffix = ""):
+	def _getFilePath_(self, key = "", name = "", category = "", version = "", suffix = ""):
 		if not key:
 			if category:
 				name = self.__verifyCategory__(category) + name;
 			key = hashlib.md5(name.encode("utf-8")).hexdigest();
 		if version:
-			version = "_" + version;
+			version = "/" + version;
 		if suffix and suffix[0] != ".":
 			suffix = "." + suffix;
 		return "".join([key, version, suffix]);
@@ -53,6 +53,15 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if len(category) > 0 and category[-1] != "/":
 			category += "/";
 		return category;
+
+	def _checkNewestVersion_(verList, toolVerList, isCheckV1 = True, isIncludeEqu = False):
+		if isCheckV1 and verList[0] != toolVerList[0]:
+			return verList[0] > toolVerList[0];
+		if verList[1] != toolVerList[1]:
+			return verList[1] > toolVerList[1];
+		if verList[2] != toolVerList[2]:
+			return verList[2] > toolVerList[2];
+		return isIncludeEqu;
 	
 	def Login(self, request, context):
 		sql = "SELECT * FROM user WHERE name = '%s' AND password = '%s'"%(request.name, request.password);
@@ -82,92 +91,122 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		sql = "SELECT name FROM user WHERE id = '%d'"%request.uid;
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
+			Log.d("Upload -> verify uid failed！", request.uid);
 			return common_pb2.Resp(isSuccess = False);
 		# 判断请求信息是否正确
 		toolVerList = self._splitVersion_(request.version);
 		if len(toolVerList) != 3:
+			Log.d("Upload -> verify version failed！", request.version);
 			return common_pb2.UpdateResp(isPermit = False);
 		# 判断数据库是否已有相应工具名，并校验所要上传工具版本号是否为最新
-		sql = "SELECT version FROM tool WHERE category = '%s' AND name = '%s' AND common_version = '%s'"%(self.__verifyCategory__(request.category), request.name, request.commonVersion);
-		ret, results = _GG("DBCManager").MySQL().execute(sql);
-		if not ret:
-			for toolInfo in results:
-				verList = self._splitVersion_(toolInfo["version"]);
-				if verList[1] > toolVerList[1] or (verList[1] == toolVerList[1] and verList[2] >= toolVerList[2]):
-					return common_pb2.UploadResp(isPermit = False);
-			fileName = self._getFileName_(name = request.name, category = request.category, version = request.version, suffix = "zip");
-			tokenStr = json.dumps({
-				"host" : _GG("ServerConfig").Config().Get("server", "remote_host"),
-				"port" : _GG("ServerConfig").Config().Get("server", "remote_port"),
-				"user" : _GG("ServerConfig").Config().Get("upload", "user"),
-				"password" : _GG("ServerConfig").Config().Get("upload", "password"),
-				"url" : os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName),
-			});
-			return common_pb2.UploadResp(isPermit = True, token = str.encode(tokenStr));
-		return common_pb2.UploadResp(isPermit = False);
+		tkey = self._getFilePath_(name = request.name, category = request.category);
+		ret, results = _GG("DBCManager").MySQL().execute("SELECT version FROM tool_detail WHERE tkey = '%s' AND common_version = '%s'"%(tkey, request.commonVersion));
+		for toolInfo in results:
+			if self._checkNewestVersion_(self._splitVersion_(toolInfo["version"]), toolVerList, isIncludeEqu = True):
+				Log.d("Upload -> verify version failed for existing higher version！", request.version, toolInfo["version"]);
+				return common_pb2.UploadResp(isPermit = False);
+		filePath = self._getFilePath_(key = tkey, version = request.version, suffix = "zip");
+		tokenStr = json.dumps({
+			"host" : _GG("ServerConfig").Config().Get("server", "remote_host"),
+			"port" : _GG("ServerConfig").Config().Get("server", "remote_port"),
+			"user" : _GG("ServerConfig").Config().Get("upload", "user"),
+			"password" : _GG("ServerConfig").Config().Get("upload", "password"),
+			"url" : os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), filePath),
+		});
+		Log.d("Upload -> success！", tokenStr);
+		return common_pb2.UploadResp(isPermit = True, token = str.encode(tokenStr));
 
 	def Uploaded(self, request, context):
 		# 校验所传用户ID数据
 		sql = "SELECT name FROM user WHERE id = '%d'"%request.uid;
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
+			Log.d("Uploaded -> verify uid failed！", request.uid);
 			return common_pb2.Resp(isSuccess = False);
 		# 判断上传信息是否正确
 		toolVerList = self._splitVersion_(request.version);
 		if len(toolVerList) != 3:
+			Log.d("Upload -> verify version failed！", request.version);
 			return common_pb2.Resp(isSuccess = False);
 		# 获取文件地址
-		fileName = self._getFileName_(name = request.name, category = request.category, version = request.version, suffix = "zip");
-		filePath = os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName);
+		tkey = self._getFilePath_(name = request.name, category = request.category)
+		filePath = self._getFilePath_(key = tkey, version = request.version, suffix = "zip");
 		# 校验上传的文件是否存在
-		if not os.path.exists(filePath):
+		if not os.path.exists(os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), filePath)):
+			Log.d("Upload -> verify filePath failed！", filePath);
 			return common_pb2.Resp(isSuccess = False);
+		# 校验是否已存在相应工具信息
+		ret, results = _GG("DBCManager").MySQL().execute("SELECT id FROM tool_detail WHERE tkey = '%s' AND version = '%s'"%(tkey, request.version));
+		if ret:
+			Log.d("Upload -> verify tool_detail failed for existing tool's info！", results);
+			return common_pb2.Resp(isSuccess = False);
+		# 更新相关工具信息
+		ret, results = _GG("DBCManager").MySQL().execute("SELECT id FROM tool WHERE tkey = '%s'"%tkey);
+		if not ret:
+			_GG("DBCManager").MySQL().execute("INSERT INTO tool(uid, tkey, category, name, description) VALUES(%d, '%s', '%s', '%s', '%s')"%(
+				request.uid, tkey, self.__verifyCategory__(request.category), request.name, request.description
+			));
+		elif request.description:
+			Log.d("Upload -> update tool's description.", request.description);
+			_GG("DBCManager").MySQL().execute("UPDATE tool SET description = '%s' WHERE tkey = '%s'"%(request.description, tkey));
 		# 插入工具信息到数据库中
-		url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
-		sql = "INSERT INTO tool(uid, tkey, category, name, version, common_version, description, url, time) VALUES(%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')"%(
-			request.uid, self._getFileName_(name = request.name, category = request.category), self.__verifyCategory__(request.category),
-			request.name, request.version, request.commonVersion, request.description,
-			url, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()));
+		url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), filePath);
+		sql = "INSERT INTO tool_detail(tkey, version, common_version, changelog, url, time) VALUES(%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')"%(
+			self.__verifyCategory__(request.category), request.version, request.commonVersion,
+			request.changelog, url, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()));
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
+			# 移除旧版本
+			ret, results = _GG("DBCManager").MySQL().execute("SELECT id, version FROM tool_detail WHERE tkey = '%s' And common_version = '%s'"%(tkey, request.commonVersion));
+			rmIdList = [];
+			for toolInfo in results:
+				verList = self._splitVersion_(toolInfo["version"]);
+				if verList[0] < toolVerList[0] or (verList[0] == toolVerList[0] and verList[1] < toolVerList[1]) or (verList[0] == toolVerList[0] and verList[1] == toolVerList[1] and verList[2] < toolVerList[2]):
+					rmIdList.append(toolInfo["id"]);
+			Log.d("Upload -> remove tools with old version.", rmIdList);
+			for tid in rmIdList:
+				_GG("DBCManager").MySQL().execute("DELETE FROM tool_detail WHERE id = '%d'"%tid);
 			return common_pb2.Resp(isSuccess = True);
 		return common_pb2.Resp(isSuccess = False);
 
 	def Download(self, request, context):
 		# 校验玩家下载请求权限[request.uid]
 		# 获取下载数据
-		sql = "SELECT tool.name, category, description, version, user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
+		sql = "SELECT tool.name, tool.category, tool.description, version, changelog, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
-			result = results[0];
-			fileName = self._getFileName_(key = request.key, version = result["version"], suffix = "zip");
-			filePath = os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName);
-			if os.path.exists(filePath):
-				url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
-				namePath = "/".join(result["category"], )
+			# 获取最优结果
+			bestResult = results[0];
+			for i in range(1, len(results)):
+				result = results[i];
+				if self._checkNewestVersion_(self._splitVersion_(result["version"]), self._splitVersion_(bestResult["version"])):
+					bestResult = result;
+			Log.d("Download -> best result:", bestResult);
+			# 返回最优结果
+			filePath = self._getFilePath_(key = request.key, version = bestResult["version"], suffix = "zip");
+			if os.path.exists(os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), filePath)):
+				url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), filePath);
 				return common_pb2.DownloadResp(isExist = True, url = url, totalSize = os.path.getsize(filePath),
-				 toolInfo = common_pb2.DownloadResp.ToolInfo(name = result["name"], category = result["category"],
-				 	description = result["description"], version = result["version"], author = result["user.name"]));
+				 toolInfo = common_pb2.DownloadResp.ToolInfo(name = bestResult["tool.name"], category = bestResult["tool.category"],
+				 	description = bestResult["tool.description"], version = bestResult["version"], author = bestResult["user.name"], changelog = bestResult["changelog"]));
 		return common_pb2.DownloadResp(isExist = False);
 
 	def Update(self, request, context):
 		# 判断请求信息是否正确
 		toolVerList = self._splitVersion_(request.version);
 		if len(toolVerList) != 3:
+			Log.d("Upload -> verify version failed！", request.version);
 			return common_pb2.UpdateResp(isUpToDate = True);
 		# 找到对应common版本的下载链接
-		sql = "SELECT version FROM tool WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
+		sql = "SELECT version FROM tool_detail WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
-		if ret:
-			for toolInfo in results:
-				verList = self._splitVersion_(toolInfo["version"]);
-				if verList[1] > toolVerList[1] or (verList[1] == toolVerList[1] and verList[2] >= toolVerList[2]):
-					fileName = self._getFileName_(key = request.key, version = toolInfo["version"], suffix = "zip");
-					filePath = os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), fileName);
-					if os.path.exists(filePath):
-						url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), fileName);
-						return common_pb2.UpdateResp(isUpToDate = False, 
-							updateInfo = common_pb2.DownloadResp(isExist = True, url = url, totalSize = os.path.getsize(filePath)));
+		for toolInfo in results:
+			if self._checkNewestVersion_(self._splitVersion_(toolInfo["version"]), toolVerList):
+				filePath = self._getFilePath_(key = request.key, version = toolInfo["version"], suffix = "zip");
+				if os.path.exists(os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), filePath)):
+					url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), filePath);
+					return common_pb2.UpdateResp(isUpToDate = False, 
+						updateInfo = common_pb2.DownloadResp(isExist = True, url = url, totalSize = os.path.getsize(filePath)));
 		return common_pb2.UpdateResp(isUpToDate = True);
 
 	def Comment(self, request, context):
@@ -176,8 +215,8 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
-		# 校验所传用户ID数据
-		sql = "SELECT id FROM tool WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
+		# 校验所传工具tkey数据
+		sql = "SELECT id FROM tool_detail WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			# 插入评论信息到数据库中
@@ -195,8 +234,8 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
-		# 校验所传用户ID数据
-		sql = "SELECT id FROM tool WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
+		# 校验所传工具tkey数据
+		sql = "SELECT id FROM tool_detail WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			# 插入收藏信息到数据库中
