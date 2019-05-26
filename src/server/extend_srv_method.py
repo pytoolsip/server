@@ -26,8 +26,8 @@ def RequestToolInfos(data, context):
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
 		return True, [{
-			"key" : info["tool.tkey"],
-			"title" : info["tool.name"],
+			"key" : info["tkey"],
+			"title" : info["name"],
 			"category" : info["category"],
 			"description" : info["description"],
 			"version" : info["version"],
@@ -101,7 +101,7 @@ def RequestToolInfo(data, context):
 	if ret:
 		info = retData[0];
 		return True, {
-			"title" : info["tool.name"],
+			"title" : info["name"],
 			"category" : info["category"],
 			"description" : info["description"],
 			"version" : info["version"],
