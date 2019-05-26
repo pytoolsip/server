@@ -157,15 +157,18 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			# 移除旧版本
-			ret, results = _GG("DBCManager").MySQL().execute("SELECT id, version FROM tool_detail WHERE tkey = '%s' And common_version = '%s'"%(tkey, request.commonVersion));
-			rmIdList = [];
+			ret, results = _GG("DBCManager").MySQL().execute("SELECT id, tkey, version FROM tool_detail WHERE tkey = '%s' And common_version = '%s'"%(tkey, request.commonVersion));
 			for toolInfo in results:
 				verList = self._splitVersion_(toolInfo["version"]);
 				if verList[0] < toolVerList[0] or (verList[0] == toolVerList[0] and verList[1] < toolVerList[1]) or (verList[0] == toolVerList[0] and verList[1] == toolVerList[1] and verList[2] < toolVerList[2]):
-					rmIdList.append(toolInfo["id"]);
-			Log.d("Upload -> remove tools with old version.", rmIdList);
-			for tid in rmIdList:
-				_GG("DBCManager").MySQL().execute("DELETE FROM tool_detail WHERE id = '%d'"%tid);
+					# 移除数据库中对应id的数据
+					_GG("DBCManager").MySQL().execute("DELETE FROM tool_detail WHERE id = '%d'"%toolInfo["id"]);
+					# 移除服务器中对应路径的文件
+					zfPath = self._getFilePath_(key = toolInfo["tkey"], version = toolInfo["version"], suffix = "zip");
+					zfPath = os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), zfPath);
+					if os.path.exists(zfPath):
+						os.remove(zfPath); # 移除zip文件
+					Log.d("Upload -> remove tool sucess .", toolInfo);
 			return common_pb2.Resp(isSuccess = True);
 		return common_pb2.Resp(isSuccess = False);
 
