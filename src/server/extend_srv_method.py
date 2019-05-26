@@ -25,15 +25,25 @@ def RequestToolInfos(data, context):
 	sql = "SELECT tool.name, tool.category, tool.description, tkey, version, changelog, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE common_version = '%s' ORDER BY time"%data.get("commonVersion", "");
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
-		return True, [{
-			"key" : info["tkey"],
-			"title" : info["tool.name"],
-			"category" : info["tool.category"],
-			"description" : info["tool.description"],
-			"version" : info["version"],
-			"changelog" : info["changelog"],
-			"author" : info["user.name"],
-		} for info in retData];
+		toolInfos, userNameMap = [], {};
+		for info in retData:
+			tkey = info["tkey"];
+			# 获取用户名
+			if tkey not in userNameMap:
+				ret, retData1 = _GG("DBCManager").MySQL().execute("SELECT user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s'"%tkey);
+				if ret:
+					userNameMap[tkey] = retData1[0][user.name];
+			# 添加工具信息
+			toolInfos.append({
+				"key" : tkey,
+				"title" : info["tool.name"],
+				"category" : info["tool.category"],
+				"description" : info["tool.description"],
+				"version" : info["version"],
+				"changelog" : info["changelog"],
+				"author" : userNameMap.get(tkey, "无"),
+			});
+		return True, toolInfos;
 	return False, [];
 
 def VertifyToolName(data, context):
@@ -99,6 +109,12 @@ def RequestToolInfo(data, context):
 	sql = "SELECT tool.name, tool.category, tool.description, version, changelog, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND common_version = '%s' ORDER BY time"%(data.get("key", ""), data.get("commonVersion", ""));
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
+		# 获取用户名
+		userName = "无";
+		ret, retData1 = _GG("DBCManager").MySQL().execute("SELECT user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s'"%data.get("key", ""));
+		if ret:
+			userName = retData1[0][user.name];
+		# 返回工具信息
 		info = retData[0];
 		return True, {
 			"title" : info["tool.name"],
@@ -106,6 +122,6 @@ def RequestToolInfo(data, context):
 			"description" : info["tool.description"],
 			"version" : info["version"],
 			"changelog" : info["changelog"],
-			"author" : info["user.name"],
+			"author" : userName,
 		};
 	return False, {};
