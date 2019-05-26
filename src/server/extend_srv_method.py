@@ -22,7 +22,7 @@ def ExtendSrvMethod():
 	pass;
 
 def RequestToolInfos(data, context):
-	sql = "SELECT tool.name, tool.category, tool.description, tkey, version, changelog, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE common_version = '%s' ORDER BY time"%data.get("commonVersion", "");
+	sql = "SELECT tool.name, tool.category, tool.description, tkey, version, changelog FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey WHERE common_version = '%s' ORDER BY time"%data.get("commonVersion", "");
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
 		toolInfos, userNameMap = [], {};
@@ -32,7 +32,7 @@ def RequestToolInfos(data, context):
 			if tkey not in userNameMap:
 				ret, retData1 = _GG("DBCManager").MySQL().execute("SELECT user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s'"%tkey);
 				if ret:
-					userNameMap[tkey] = retData1[0][user.name];
+					userNameMap[tkey] = retData1[0]["user.name"];
 			# 添加工具信息
 			toolInfos.append({
 				"key" : tkey,
@@ -106,14 +106,14 @@ def sendEmailContent(email, title, content):
 	return False;
 
 def RequestToolInfo(data, context):
-	sql = "SELECT tool.name, tool.category, tool.description, version, changelog, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND common_version = '%s' ORDER BY time"%(data.get("key", ""), data.get("commonVersion", ""));
+	sql = "SELECT tool.name, tool.category, tool.description, version, changelog FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey WHERE tkey = '%s' AND common_version = '%s' ORDER BY time"%(data.get("key", ""), data.get("commonVersion", ""));
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
 		# 获取用户名
 		userName = "无";
 		ret, retData1 = _GG("DBCManager").MySQL().execute("SELECT user.name FROM tool LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s'"%data.get("key", ""));
 		if ret:
-			userName = retData1[0][user.name];
+			userName = retData1[0]["user.name"];
 		# 返回工具信息
 		info = retData[0];
 		return True, {
