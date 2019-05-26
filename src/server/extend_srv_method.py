@@ -22,7 +22,7 @@ def ExtendSrvMethod():
 	pass;
 
 def RequestToolInfos(data, context):
-	sql = "SELECT tool.name, tool.category, tool.description, tkey, version, changelog, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE common_version = '%s'"%data.get("commonVersion", "");
+	sql = "SELECT tool.name, tool.category, tool.description, tkey, version, changelog, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE common_version = '%s' ORDER BY time"%data.get("commonVersion", "");
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
 		return True, [{
@@ -96,7 +96,7 @@ def sendEmailContent(email, title, content):
 	return False;
 
 def RequestToolInfo(data, context):
-	sql = "SELECT tool.name, tool.category, tool.description, version, changelog, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND common_version = '%s'"%(data.get("key", ""), data.get("commonVersion", ""));
+	sql = "SELECT tool.name, tool.category, tool.description, version, changelog, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND common_version = '%s' ORDER BY time"%(data.get("key", ""), data.get("commonVersion", ""));
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
 		info = retData[0];
