@@ -100,7 +100,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			return common_pb2.UpdateResp(isPermit = False);
 		# 判断数据库是否已有相应工具名，并校验所要上传工具版本号是否为最新
 		tkey = self._getFilePath_(name = request.name, category = request.category);
-		ret, results = _GG("DBCManager").MySQL().execute("SELECT version FROM tool_detail WHERE tkey = '%s' AND common_version = '%s'"%(tkey, request.commonVersion));
+		ret, results = _GG("DBCManager").MySQL().execute("SELECT version FROM tool_detail WHERE tkey = '%s' AND ip_version = '%s'"%(tkey, request.IPVersion));
 		for toolInfo in results:
 			if self._checkNewestVersion_(self._splitVersion_(toolInfo["version"]), toolVerList, isIncludeEqu = True):
 				Log.d("Upload -> verify version failed for existing higher version！", request.version, toolInfo["version"]);
@@ -151,13 +151,13 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			_GG("DBCManager").MySQL().execute("UPDATE tool SET description = '%s' WHERE tkey = '%s'"%(request.description, tkey));
 		# 插入工具信息到数据库中
 		url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), filePath);
-		sql = "INSERT INTO tool_detail(tkey, version, common_version, changelog, url, time) VALUES(%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')"%(
-			self.__verifyCategory__(request.category), request.version, request.commonVersion,
+		sql = "INSERT INTO tool_detail(tkey, version, ip_version, changelog, url, time) VALUES(%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')"%(
+			self.__verifyCategory__(request.category), request.version, request.IPVersion,
 			request.changelog, url, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()));
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			# 移除旧版本
-			ret, results = _GG("DBCManager").MySQL().execute("SELECT id, tkey, version FROM tool_detail WHERE tkey = '%s' And common_version = '%s'"%(tkey, request.commonVersion));
+			ret, results = _GG("DBCManager").MySQL().execute("SELECT id, tkey, version FROM tool_detail WHERE tkey = '%s' And ip_version = '%s'"%(tkey, request.IPVersion));
 			for toolInfo in results:
 				verList = self._splitVersion_(toolInfo["version"]);
 				if verList[0] < toolVerList[0] or (verList[0] == toolVerList[0] and verList[1] < toolVerList[1]) or (verList[0] == toolVerList[0] and verList[1] == toolVerList[1] and verList[2] < toolVerList[2]):
@@ -175,7 +175,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 	def Download(self, request, context):
 		# 校验玩家下载请求权限[request.uid]
 		# 获取下载数据
-		sql = "SELECT tool.name, tool.category, tool.description, version, changelog, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
+		sql = "SELECT tool.name, tool.category, tool.description, version, changelog, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND ip_version = '%s'"%(request.key, request.IPVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			# 获取最优结果
@@ -200,8 +200,8 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if len(toolVerList) != 3:
 			Log.d("Upload -> verify version failed！", request.version);
 			return common_pb2.UpdateResp(isUpToDate = True);
-		# 找到对应common版本的下载链接
-		sql = "SELECT version FROM tool_detail WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
+		# 找到对应平台版本的下载链接
+		sql = "SELECT version FROM tool_detail WHERE tkey = '%s' AND ip_version = '%s'"%(request.key, request.IPVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		for toolInfo in results:
 			if self._checkNewestVersion_(self._splitVersion_(toolInfo["version"]), toolVerList):
@@ -219,12 +219,12 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 校验所传工具tkey数据
-		sql = "SELECT id FROM tool_detail WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
+		sql = "SELECT id FROM tool_detail WHERE tkey = '%s' AND ip_version = '%s'"%(request.key, request.IPVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			# 插入评论信息到数据库中
-			sql = "INSERT INTO comment(uid, tkey, version, score, content, time) VALUES(%d, %d, %.1f, '%s', '%s')"%(
-				request.uid, request.key, request.version, request.score, request.content,
+			sql = "INSERT INTO comment(uid, tkey, score, content, time) VALUES(%d, %d, %.1f, '%s', '%s')"%(
+				request.uid, request.key, request.score, request.content,
 				time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()));
 			ret, results = _GG("DBCManager").MySQL().execute(sql);
 			if ret:
@@ -238,7 +238,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if not ret:
 			return common_pb2.Resp(isSuccess = False);
 		# 校验所传工具tkey数据
-		sql = "SELECT id FROM tool_detail WHERE tkey = '%s' AND common_version = '%s'"%(request.key, request.commonVersion);
+		sql = "SELECT id FROM tool_detail WHERE tkey = '%s' AND ip_version = '%s'"%(request.key, request.IPVersion);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			# 插入收藏信息到数据库中
@@ -247,3 +247,13 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			if ret:
 				return common_pb2.Resp(isSuccess = True);
 		return common_pb2.Resp(isSuccess = False);
+
+	def UpdateIP(self, request, context):
+		# 判断请求信息是否正确
+		toolVerList = self._splitVersion_(request.version);
+		if len(toolVerList) != 3:
+			Log.d("Upload -> verify version failed！", request.version);
+			return common_pb2.UpdateIPResp(isUpToDate = True);
+		# 判断是否需要更新
+		ret, results = _GG("DBCManager").MySQL().execute("SELECT version FROM ptip");
+		return common_pb2.UpdateIPResp(isUpToDate = True);

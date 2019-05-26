@@ -22,7 +22,7 @@ def ExtendSrvMethod():
 	pass;
 
 def RequestToolInfos(data, context):
-	sql = "SELECT tool.name, category, description, tool.tkey, version, changelog, user.name FROM tool_detail INNER JOIN tool ON tool_detail.tkey = tool.tkey INNER JOIN user ON tool.uid = user.id WHERE common_version = '%s' ORDER BY tool_detail.time"%data.get("commonVersion", "");
+	sql = "SELECT tool.name, category, description, tool.tkey, version, changelog, user.name FROM tool_detail INNER JOIN tool ON tool_detail.tkey = tool.tkey INNER JOIN user ON tool.uid = user.id WHERE ip_version = '%s' ORDER BY tool_detail.time"%data.get("IPVersion", "");
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
 		return True, [{
@@ -96,7 +96,7 @@ def sendEmailContent(email, title, content):
 	return False;
 
 def RequestToolInfo(data, context):
-	sql = "SELECT tool.name, category, description, version, changelog, user.name FROM tool_detail INNER JOIN tool ON tool_detail.tkey = tool.tkey INNER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND common_version = '%s' ORDER BY tool_detail.time"%(data.get("key", ""), data.get("commonVersion", ""));
+	sql = "SELECT tool.name, category, description, version, changelog, user.name FROM tool_detail INNER JOIN tool ON tool_detail.tkey = tool.tkey INNER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND ip_version = '%s' ORDER BY tool_detail.time"%(data.get("key", ""), data.get("IPVersion", ""));
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
 		info = retData[0];
