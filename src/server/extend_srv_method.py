@@ -22,14 +22,14 @@ def ExtendSrvMethod():
 	pass;
 
 def RequestToolInfos(data, context):
-	sql = "SELECT tool.name, tool.category, tool.description, tkey, version, changelog, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE common_version = '%s' ORDER BY time"%data.get("commonVersion", "");
+	sql = "SELECT tool.name, category, description, tool.tkey, version, changelog, user.name FROM tool_detail INNER JOIN tool ON tool_detail.tkey = tool.tkey INNER JOIN user ON tool.uid = user.id WHERE common_version = '%s' ORDER BY time"%data.get("commonVersion", "");
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
 		return True, [{
-			"key" : info["tkey"],
+			"key" : info["tool.tkey"],
 			"title" : info["tool.name"],
-			"category" : info["tool.category"],
-			"description" : info["tool.description"],
+			"category" : info["category"],
+			"description" : info["description"],
 			"version" : info["version"],
 			"changelog" : info["changelog"],
 			"author" : info["user.name"],
@@ -40,10 +40,10 @@ def VertifyToolName(data, context):
 	if not data.get("fullName", None):
 		return False, {"tips" : "校验字段不正确！"}; # 校验失败，不存在校验数据
 	tkey = hashlib.md5(data["fullName"].encode("utf-8")).hexdigest();
-	sql = "SELECT tool.uid,version FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey WHERE tkey = '%s'"%tkey;
+	sql = "SELECT uid,version FROM tool_detail INNER JOIN tool ON tool_detail.tkey = tool.tkey WHERE tkey = '%s'"%tkey;
 	ret,retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
-		if retData[0]["uid"] == data.get("tool.uid", -1):
+		if retData[0]["uid"] == data.get("uid", -1):
 			return True, {"version" : retData[0]["version"]};
 		return False, {"tips" : "已存在相同工具名，且您不是此工具的提交者！"}; # 校验失败，存在相同工具名，却不同玩家的工具数据
 	return True, {};
@@ -96,14 +96,14 @@ def sendEmailContent(email, title, content):
 	return False;
 
 def RequestToolInfo(data, context):
-	sql = "SELECT tool.name, tool.category, tool.description, version, changelog, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND common_version = '%s' ORDER BY time"%(data.get("key", ""), data.get("commonVersion", ""));
+	sql = "SELECT tool.name, category, description, version, changelog, user.name FROM tool_detail INNER JOIN tool ON tool_detail.tkey = tool.tkey INNER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND common_version = '%s' ORDER BY time"%(data.get("key", ""), data.get("commonVersion", ""));
 	ret, retData = _GG("DBCManager").MySQL().execute(sql);
 	if ret:
 		info = retData[0];
 		return True, {
 			"title" : info["tool.name"],
-			"category" : info["tool.category"],
-			"description" : info["tool.description"],
+			"category" : info["category"],
+			"description" : info["description"],
 			"version" : info["version"],
 			"changelog" : info["changelog"],
 			"author" : info["user.name"],
