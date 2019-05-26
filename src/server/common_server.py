@@ -250,10 +250,13 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 
 	def UpdateIP(self, request, context):
 		# 判断请求信息是否正确
-		toolVerList = self._splitVersion_(request.version);
-		if len(toolVerList) != 3:
+		ptipVerList = self._splitVersion_(request.version);
+		if len(ptipVerList) != 3:
 			Log.d("Upload -> verify version failed！", request.version);
 			return common_pb2.UpdateIPResp(isUpToDate = True);
 		# 判断是否需要更新
 		ret, results = _GG("DBCManager").MySQL().execute("SELECT version FROM ptip");
+		for ptipInfo in results:
+			if self._checkNewestVersion_(self._splitVersion_(ptipInfo["version"]), ptipVerList):
+				return common_pb2.UpdateIPResp(isUpToDate = True);
 		return common_pb2.UpdateIPResp(isUpToDate = True);
