@@ -126,19 +126,19 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		# 判断上传信息是否正确
 		toolVerList = self._splitVersion_(request.version);
 		if len(toolVerList) != 3:
-			_GG("Log").d("Upload -> verify version failed！", request.version);
+			_GG("Log").d("Uploaded -> verify version failed！", request.version);
 			return common_pb2.Resp(isSuccess = False);
 		# 获取文件地址
 		tkey = self._getFilePath_(name = request.name, category = request.category)
 		filePath = self._getFilePath_(key = tkey, version = request.version, suffix = "zip");
 		# 校验上传的文件是否存在
 		if not os.path.exists(os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), filePath)):
-			_GG("Log").d("Upload -> verify filePath failed！", filePath);
+			_GG("Log").d("Uploaded -> verify filePath failed！", filePath);
 			return common_pb2.Resp(isSuccess = False);
 		# 校验是否已存在相应工具信息
 		ret, results = _GG("DBCManager").MySQL().execute("SELECT id FROM tool_detail WHERE tkey = '%s' AND version = '%s'"%(tkey, request.version));
 		if ret:
-			_GG("Log").d("Upload -> verify tool_detail failed for existing tool's info！", results);
+			_GG("Log").d("Uploaded -> verify tool_detail failed for existing tool's info！", results);
 			return common_pb2.Resp(isSuccess = False);
 		# 更新相关工具信息
 		ret, results = _GG("DBCManager").MySQL().execute("SELECT id FROM tool WHERE tkey = '%s'"%tkey);
@@ -147,7 +147,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 				request.uid, tkey, self.__verifyCategory__(request.category), request.name, request.description
 			));
 		elif request.description:
-			_GG("Log").d("Upload -> update tool's description.", request.description);
+			_GG("Log").d("Uploaded -> update tool's description.", request.description);
 			_GG("DBCManager").MySQL().execute("UPDATE tool SET description = '%s' WHERE tkey = '%s'"%(request.description, tkey));
 		# 插入工具信息到数据库中
 		url = os.path.join(_GG("ServerConfig").Config().Get("download", "file_addr"), filePath);
@@ -168,7 +168,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 					zfPath = os.path.join(_GG("ServerConfig").Config().Get("upload", "file_dir"), zfPath);
 					if os.path.exists(zfPath):
 						os.remove(zfPath); # 移除zip文件
-					_GG("Log").d("Upload -> remove tool sucess .", toolInfo);
+					_GG("Log").d("Uploaded -> remove tool sucess .", toolInfo);
 			return common_pb2.Resp(isSuccess = True);
 		return common_pb2.Resp(isSuccess = False);
 
@@ -198,7 +198,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		# 判断请求信息是否正确
 		toolVerList = self._splitVersion_(request.version);
 		if len(toolVerList) != 3:
-			_GG("Log").d("Upload -> verify version failed！", request.version);
+			_GG("Log").d("Update -> verify version failed！", request.version);
 			return common_pb2.UpdateResp(isUpToDate = True);
 		# 找到对应平台版本的下载链接
 		sql = "SELECT version FROM tool_detail WHERE tkey = '%s' AND ip_version = '%s'"%(request.key, request.IPVersion);
@@ -249,12 +249,12 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		return common_pb2.Resp(isSuccess = False);
 
 	def UpdateIP(self, request, context):
-		exeInfo = common_pb2.UpdateInfo(isUpToDate = True);
+		exeInfo = common_pb2.UpdateIPResp.UpdateInfo(isUpToDate = True);
 		# 判断请求信息是否正确
 		ptipVerList = self._splitVersion_(request.version);
 		if len(ptipVerList) != 3:
-			_GG("Log").d("Upload -> verify version failed！", request.version);
-			return common_pb2.UpdateIPResp(IPInfo = common_pb2.UpdateInfo(isUpToDate = True), exeInfo = exeInfo);
+			_GG("Log").d("UpdateIP -> verify version failed！", request.version);
+			return common_pb2.UpdateIPResp(IPInfo = common_pb2.UpdateIPResp.UpdateInfo(isUpToDate = True), exeInfo = exeInfo);
 		# 判断是否需要更新
 		ret, results = _GG("DBCManager").MySQL().execute("SELECT update_version, update_url, update_size, update_type FROM ptip WHERE version = '%s'"%request.version);
 		if ret and results[0]["update_version"] != request.version:
@@ -263,8 +263,8 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			if ret1:
 				updateExeInfo = results1[0];
 				if request.updateExeVersion != updateExeInfo["version"]:
-					exeInfo = common_pb2.UpdateInfo(isUpToDate = False, url = updateExeInfo["url"], totalSize = updateExeInfo["size"]);
+					exeInfo = common_pb2.UpdateIPResp.UpdateInfo(isUpToDate = False, url = updateExeInfo["url"], totalSize = updateExeInfo["size"]);
 			# 返回平台更新信息
 			ptipInfo = results[0];
-			return common_pb2.UpdateIPResp(isAllowQuit = ptipInfo["update_type"]>1, IPInfo = common_pb2.UpdateInfo(isUpToDate = False, url = ptipInfo["update_url"], totalSize = ptipInfo["update_size"]), exeInfo = exeInfo);
-		return common_pb2.UpdateIPResp(IPInfo = common_pb2.UpdateInfo(isUpToDate = True), exeInfo = exeInfo);
+			return common_pb2.UpdateIPResp(isAllowQuit = ptipInfo["update_type"]>1, IPInfo = common_pb2.UpdateIPResp.UpdateInfo(isUpToDate = False, url = ptipInfo["update_url"], totalSize = ptipInfo["update_size"]), exeInfo = exeInfo);
+		return common_pb2.UpdateIPResp(IPInfo = common_pb2.UpdateIPResp.UpdateInfo(isUpToDate = True), exeInfo = exeInfo);
