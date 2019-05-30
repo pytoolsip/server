@@ -249,22 +249,15 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		return common_pb2.Resp(isSuccess = False);
 
 	def UpdateIP(self, request, context):
-		exeInfo = common_pb2.UpdateIPResp.UpdateInfo(isUpToDate = True);
 		# 判断请求信息是否正确
 		ptipVerList = self._splitVersion_(request.version);
 		if len(ptipVerList) != 3:
 			_GG("Log").d("UpdateIP -> verify version failed！", request.version);
-			return common_pb2.UpdateIPResp(IPInfo = common_pb2.UpdateIPResp.UpdateInfo(isUpToDate = True), exeInfo = exeInfo);
+			return common_pb2.UpdateIPResp(isUpToDate = True);
 		# 判断是否需要更新
 		ret, results = _GG("DBCManager").MySQL().execute("SELECT update_version, update_url, update_size, update_type FROM ptip WHERE version = '%s'"%request.version);
 		if ret and results[0]["update_version"] != request.version:
-			# 获取更新程序的信息
-			ret1, results1 = _GG("DBCManager").MySQL().execute("SELECT version, url, size FROM update WHERE name = 'update_exe'");
-			if ret1:
-				updateExeInfo = results1[0];
-				if request.updateExeVersion != updateExeInfo["version"]:
-					exeInfo = common_pb2.UpdateIPResp.UpdateInfo(isUpToDate = False, url = updateExeInfo["url"], totalSize = updateExeInfo["size"]);
 			# 返回平台更新信息
 			ptipInfo = results[0];
-			return common_pb2.UpdateIPResp(isAllowQuit = ptipInfo["update_type"]>1, IPInfo = common_pb2.UpdateIPResp.UpdateInfo(isUpToDate = False, url = ptipInfo["update_url"], totalSize = ptipInfo["update_size"]), exeInfo = exeInfo);
-		return common_pb2.UpdateIPResp(IPInfo = common_pb2.UpdateIPResp.UpdateInfo(isUpToDate = True), exeInfo = exeInfo);
+			return common_pb2.UpdateIPResp(isUpToDate = False, url = ptipInfo["update_url"], totalSize = ptipInfo["update_size"], isAllowQuit = ptipInfo["update_type"]>1);
+		return common_pb2.UpdateIPResp(isUpToDate = True);
