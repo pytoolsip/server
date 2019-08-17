@@ -23,6 +23,7 @@ from dbc import DBCManager;
 from behaviorCore.BaseBehavior import BaseBehavior;
 from behaviorCore.BehaviorManager import BehaviorManager;
 from logCore.Logger import Logger;
+import rsaCore;
 
 from config.ServerConfig import ServerConfig;
 
@@ -86,6 +87,11 @@ class Loader(object):
 		_G.setGlobalVarTo_Global("BehaviorManager", BehaviorManager()); # 设置组件管理器的全局变量
 		_G.setGlobalVarTo_Global("DBCManager", DBCManager()); # 设置数据库连接管理器的全局变量
 		pass;
+
+	def loadFuncs(self):
+		# 加载rsa密钥解码方法
+		_G.setGlobalVarTo_Global("DecodeStr", rsaCore.decodeStr);
+		_G.setGlobalVarTo_Global("g_PublicKey", rsaCore.getPublicKey);
 
 	# 加载全局配置变量
 	def loadConfigs(self):
