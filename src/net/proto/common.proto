@@ -60,6 +60,8 @@ message ToolInfo{
 	string version = 5; // 工具版本
 	string changelog = 6; // 更新日志
 	string author = 7; // 工具作者
+	float score = 8; // 工具评分
+	int64 download = 9; // 工具下载量
 }
 
 // 下载回应
