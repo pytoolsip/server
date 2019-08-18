@@ -9,6 +9,7 @@ service Common {
 	rpc Update(UpdateReq) returns (DownloadResp);
 	rpc UpdateIP(UpdateIPReq) returns (UpdateIPResp);
 	rpc ReqToolInfo(ToolReq) returns (ToolInfoResp);
+	rpc DownloadRecord(DownloadRecordReq) returns (Resp);
 };
 
 // 通用请求
@@ -67,6 +68,7 @@ message DownloadResp{
 	string url = 2; // 下载地址
 	int64 totalSize = 3; // 下载文件总大小
 	ToolInfo toolInfo = 4; // 工具信息
+	string downloadKey = 5; // 下载键值
 }
 
 // 更新请求
@@ -103,4 +105,10 @@ message ToolInfoResp{
 	int32 code = 1; // 应答码
 	ToolInfo toolInfo = 2; // 工具信息
 	repeated ToolInfo toolList = 3; // 工具信息列表
+}
+
+// 下载记录
+message DownloadRecordReq{
+	string key = 1; // 工具键值
+	string downloadKey = 2; // 下载键值
 }

@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='pbcommon',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x12proto/common.proto\x12\x08pbcommon\" \n\x03Req\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\x0c\"\"\n\x04Resp\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\x0c\"5\n\x08LoginReq\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03pwd\x18\x02 \x01(\t\x12\x0e\n\x06isAuto\x18\x03 \x01(\x08\"3\n\x08UserInfo\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x0b\n\x03pwd\x18\x02 \x01(\t\x12\r\n\x05\x65mail\x18\x03 \x01(\t\"R\n\tLoginResp\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12$\n\x08userInfo\x18\x02 \x01(\x0b\x32\x12.pbcommon.UserInfo\x12\x11\n\tpublicKey\x18\x03 \x01(\t\"-\n\x0b\x44ownloadReq\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x11\n\tIPBaseVer\x18\x02 \x01(\t\"\x81\x01\n\x08ToolInfo\x12\x0c\n\x04tkey\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x10\n\x08\x63\x61tegory\x18\x03 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x0f\n\x07version\x18\x05 \x01(\t\x12\x11\n\tchangelog\x18\x06 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x07 \x01(\t\"b\n\x0c\x44ownloadResp\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x0b\n\x03url\x18\x02 \x01(\t\x12\x11\n\ttotalSize\x18\x03 \x01(\x03\x12$\n\x08toolInfo\x18\x04 \x01(\x0b\x32\x12.pbcommon.ToolInfo\"<\n\tUpdateReq\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12\x11\n\tIPBaseVer\x18\x03 \x01(\t\"\x1e\n\x0bUpdateIPReq\x12\x0f\n\x07version\x18\x01 \x01(\t\"\x86\x01\n\x0cUpdateIPResp\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12/\n\x07urlList\x18\x02 \x03(\x0b\x32\x1e.pbcommon.UpdateIPResp.urlInfo\x1a\x37\n\x07urlInfo\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x11\n\ttotalSize\x18\x02 \x01(\x03\x12\x0c\n\x04path\x18\x03 \x01(\t\")\n\x07ToolReq\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x11\n\tIPBaseVer\x18\x02 \x01(\t\"h\n\x0cToolInfoResp\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12$\n\x08toolInfo\x18\x02 \x01(\x0b\x32\x12.pbcommon.ToolInfo\x12$\n\x08toolList\x18\x03 \x03(\x0b\x32\x12.pbcommon.ToolInfo2\xcb\x02\n\x06\x43ommon\x12(\n\x07Request\x12\r.pbcommon.Req\x1a\x0e.pbcommon.Resp\x12\x30\n\x05Login\x12\x12.pbcommon.LoginReq\x1a\x13.pbcommon.LoginResp\x12\x39\n\x08\x44ownload\x12\x15.pbcommon.DownloadReq\x1a\x16.pbcommon.DownloadResp\x12\x35\n\x06Update\x12\x13.pbcommon.UpdateReq\x1a\x16.pbcommon.DownloadResp\x12\x39\n\x08UpdateIP\x12\x15.pbcommon.UpdateIPReq\x1a\x16.pbcommon.UpdateIPResp\x12\x38\n\x0bReqToolInfo\x12\x11.pbcommon.ToolReq\x1a\x16.pbcommon.ToolInfoRespb\x06proto3')
+  serialized_pb=_b('\n\x12proto/common.proto\x12\x08pbcommon\" \n\x03Req\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\x0c\"\"\n\x04Resp\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\x0c\"5\n\x08LoginReq\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03pwd\x18\x02 \x01(\t\x12\x0e\n\x06isAuto\x18\x03 \x01(\x08\"3\n\x08UserInfo\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x0b\n\x03pwd\x18\x02 \x01(\t\x12\r\n\x05\x65mail\x18\x03 \x01(\t\"R\n\tLoginResp\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12$\n\x08userInfo\x18\x02 \x01(\x0b\x32\x12.pbcommon.UserInfo\x12\x11\n\tpublicKey\x18\x03 \x01(\t\"-\n\x0b\x44ownloadReq\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x11\n\tIPBaseVer\x18\x02 \x01(\t\"\x81\x01\n\x08ToolInfo\x12\x0c\n\x04tkey\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x10\n\x08\x63\x61tegory\x18\x03 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x0f\n\x07version\x18\x05 \x01(\t\x12\x11\n\tchangelog\x18\x06 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x07 \x01(\t\"w\n\x0c\x44ownloadResp\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x0b\n\x03url\x18\x02 \x01(\t\x12\x11\n\ttotalSize\x18\x03 \x01(\x03\x12$\n\x08toolInfo\x18\x04 \x01(\x0b\x32\x12.pbcommon.ToolInfo\x12\x13\n\x0b\x64ownloadKey\x18\x05 \x01(\t\"<\n\tUpdateReq\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12\x11\n\tIPBaseVer\x18\x03 \x01(\t\"\x1e\n\x0bUpdateIPReq\x12\x0f\n\x07version\x18\x01 \x01(\t\"\x86\x01\n\x0cUpdateIPResp\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12/\n\x07urlList\x18\x02 \x03(\x0b\x32\x1e.pbcommon.UpdateIPResp.urlInfo\x1a\x37\n\x07urlInfo\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x11\n\ttotalSize\x18\x02 \x01(\x03\x12\x0c\n\x04path\x18\x03 \x01(\t\")\n\x07ToolReq\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x11\n\tIPBaseVer\x18\x02 \x01(\t\"h\n\x0cToolInfoResp\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12$\n\x08toolInfo\x18\x02 \x01(\x0b\x32\x12.pbcommon.ToolInfo\x12$\n\x08toolList\x18\x03 \x03(\x0b\x32\x12.pbcommon.ToolInfo\"5\n\x11\x44ownloadRecordReq\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x13\n\x0b\x64ownloadKey\x18\x02 \x01(\t2\x8a\x03\n\x06\x43ommon\x12(\n\x07Request\x12\r.pbcommon.Req\x1a\x0e.pbcommon.Resp\x12\x30\n\x05Login\x12\x12.pbcommon.LoginReq\x1a\x13.pbcommon.LoginResp\x12\x39\n\x08\x44ownload\x12\x15.pbcommon.DownloadReq\x1a\x16.pbcommon.DownloadResp\x12\x35\n\x06Update\x12\x13.pbcommon.UpdateReq\x1a\x16.pbcommon.DownloadResp\x12\x39\n\x08UpdateIP\x12\x15.pbcommon.UpdateIPReq\x1a\x16.pbcommon.UpdateIPResp\x12\x38\n\x0bReqToolInfo\x12\x11.pbcommon.ToolReq\x1a\x16.pbcommon.ToolInfoResp\x12=\n\x0e\x44ownloadRecord\x12\x1b.pbcommon.DownloadRecordReq\x1a\x0e.pbcommon.Respb\x06proto3')
 )
 
 
@@ -383,6 +383,13 @@ _DOWNLOADRESP = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='downloadKey', full_name='pbcommon.DownloadResp.downloadKey', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -396,7 +403,7 @@ _DOWNLOADRESP = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=473,
-  serialized_end=571,
+  serialized_end=592,
 )
 
 
@@ -440,8 +447,8 @@ _UPDATEREQ = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=573,
-  serialized_end=633,
+  serialized_start=594,
+  serialized_end=654,
 )
 
 
@@ -471,8 +478,8 @@ _UPDATEIPREQ = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=635,
-  serialized_end=665,
+  serialized_start=656,
+  serialized_end=686,
 )
 
 
@@ -516,8 +523,8 @@ _UPDATEIPRESP_URLINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=747,
-  serialized_end=802,
+  serialized_start=768,
+  serialized_end=823,
 )
 
 _UPDATEIPRESP = _descriptor.Descriptor(
@@ -553,8 +560,8 @@ _UPDATEIPRESP = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=668,
-  serialized_end=802,
+  serialized_start=689,
+  serialized_end=823,
 )
 
 
@@ -591,8 +598,8 @@ _TOOLREQ = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=804,
-  serialized_end=845,
+  serialized_start=825,
+  serialized_end=866,
 )
 
 
@@ -636,8 +643,46 @@ _TOOLINFORESP = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=847,
-  serialized_end=951,
+  serialized_start=868,
+  serialized_end=972,
+)
+
+
+_DOWNLOADRECORDREQ = _descriptor.Descriptor(
+  name='DownloadRecordReq',
+  full_name='pbcommon.DownloadRecordReq',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='pbcommon.DownloadRecordReq.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='downloadKey', full_name='pbcommon.DownloadRecordReq.downloadKey', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=974,
+  serialized_end=1027,
 )
 
 _LOGINRESP.fields_by_name['userInfo'].message_type = _USERINFO
@@ -659,6 +704,7 @@ DESCRIPTOR.message_types_by_name['UpdateIPReq'] = _UPDATEIPREQ
 DESCRIPTOR.message_types_by_name['UpdateIPResp'] = _UPDATEIPRESP
 DESCRIPTOR.message_types_by_name['ToolReq'] = _TOOLREQ
 DESCRIPTOR.message_types_by_name['ToolInfoResp'] = _TOOLINFORESP
+DESCRIPTOR.message_types_by_name['DownloadRecordReq'] = _DOWNLOADRECORDREQ
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Req = _reflection.GeneratedProtocolMessageType('Req', (_message.Message,), dict(
@@ -760,6 +806,13 @@ ToolInfoResp = _reflection.GeneratedProtocolMessageType('ToolInfoResp', (_messag
   ))
 _sym_db.RegisterMessage(ToolInfoResp)
 
+DownloadRecordReq = _reflection.GeneratedProtocolMessageType('DownloadRecordReq', (_message.Message,), dict(
+  DESCRIPTOR = _DOWNLOADRECORDREQ,
+  __module__ = 'proto.common_pb2'
+  # @@protoc_insertion_point(class_scope:pbcommon.DownloadRecordReq)
+  ))
+_sym_db.RegisterMessage(DownloadRecordReq)
+
 
 
 _COMMON = _descriptor.ServiceDescriptor(
@@ -768,8 +821,8 @@ _COMMON = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=954,
-  serialized_end=1285,
+  serialized_start=1030,
+  serialized_end=1424,
   methods=[
   _descriptor.MethodDescriptor(
     name='Request',
@@ -823,6 +876,15 @@ _COMMON = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_TOOLREQ,
     output_type=_TOOLINFORESP,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='DownloadRecord',
+    full_name='pbcommon.Common.DownloadRecord',
+    index=6,
+    containing_service=None,
+    input_type=_DOWNLOADRECORDREQ,
+    output_type=_RESP,
     serialized_options=None,
   ),
 ])

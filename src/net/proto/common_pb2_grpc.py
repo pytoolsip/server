@@ -44,6 +44,11 @@ class CommonStub(object):
         request_serializer=proto_dot_common__pb2.ToolReq.SerializeToString,
         response_deserializer=proto_dot_common__pb2.ToolInfoResp.FromString,
         )
+    self.DownloadRecord = channel.unary_unary(
+        '/pbcommon.Common/DownloadRecord',
+        request_serializer=proto_dot_common__pb2.DownloadRecordReq.SerializeToString,
+        response_deserializer=proto_dot_common__pb2.Resp.FromString,
+        )
 
 
 class CommonServicer(object):
@@ -92,6 +97,13 @@ class CommonServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def DownloadRecord(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_CommonServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -124,6 +136,11 @@ def add_CommonServicer_to_server(servicer, server):
           servicer.ReqToolInfo,
           request_deserializer=proto_dot_common__pb2.ToolReq.FromString,
           response_serializer=proto_dot_common__pb2.ToolInfoResp.SerializeToString,
+      ),
+      'DownloadRecord': grpc.unary_unary_rpc_method_handler(
+          servicer.DownloadRecord,
+          request_deserializer=proto_dot_common__pb2.DownloadRecordReq.FromString,
+          response_serializer=proto_dot_common__pb2.Resp.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

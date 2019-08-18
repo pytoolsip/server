@@ -88,8 +88,8 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if ret:
 			userInfo = results[0];
 			# 生成索要缓存的密码Md5
-            randCode = random_util.randomNum(8); # 8位随机码
-            pwdMd5 = hashlib.md5("|".join([userInfo["password"], randCode]).encode("utf-8")).hexdigest();
+            randMulti = random_util.randomMulti(12); # 12位随机数
+            pwdMd5 = hashlib.md5("|".join([userInfo["password"], randMulti]).encode("utf-8")).hexdigest();
             # 缓存密码信息
 			expires = 10*24*60*60; # 缓存10天
             _GG("DBCManager").Redis().set(pwdMd5, userInfo["password"], expires);
@@ -98,7 +98,6 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		return common_pb2.LoginResp(code = RespCode.LOGIN_FAILED.value, publicKey = _GG("g_PublicKey"));
 
 	def Download(self, request, context):
-		# 校验玩家下载请求权限[request.uid]
 		# 获取下载数据
 		sql = "SELECT tool.name, tool.category, tool.description, version, changelog, file_path, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND ip_base_version = '%s'"%(request.key, request.IPBaseVer);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
@@ -110,8 +109,13 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			filePath = bestResult["file_path"];
 			absFilePath = os.path.join(_GG("ServerConfig").Config().Get("upload", "tool_file_addr"), filePath);
 			if os.path.exists(absFilePath):
+				# 缓存下载键值
+            	randMulti = random_util.randomMulti(12); # 12位随机数
+				downloadKey = hashlib.md5("|".join([request.key, randMulti]).encode("utf-8")).hexdigest();
+				_GG("DBCManager").Redis().set(downloadKey, request.key, 12*60*60); # 缓存12小时
+				# 返回下载数据
 				url = os.path.join(_GG("ServerConfig").Config().Get("download", "tool_file_addr"), filePath);
-				return common_pb2.DownloadResp(code = RespCode.SUCCESS.value, url = url, totalSize = os.path.getsize(absFilePath),
+				return common_pb2.DownloadResp(code = RespCode.SUCCESS.value, url = url, totalSize = os.path.getsize(absFilePath), downloadKey = downloadKey, 
 				 toolInfo = common_pb2.ToolInfo(tkey = request.key, name = bestResult["tool.name"], category = bestResult["tool.category"],
 				 	description = bestResult["tool.description"], version = bestResult["version"], changelog = bestResult["changelog"], author = bestResult["user.name"]));
 		return common_pb2.DownloadResp(code = RespCode.DOWNLOAD_FAILED.value);
@@ -201,3 +205,14 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 				version = bestResult["version"], changelog = bestResult["changelog"], author = bestResult["user.name"]));
 			return common_pb2.ToolInfoResp(code = RespCode.SUCCESS.value, toolList = toolInfos);
 		return common_pb2.ToolInfoResp(code = RespCode.UPDATE_FAILED.value);
+
+	def DownloadRecord(self, request, context):
+		# 更新工具的下载数据
+		if _GG("DBCManager").Redis().exists(request.downloadKey):
+            tkey = _GG("DBCManager").Redis().get(request.downloadKey)); # 从缓存中读取下载key值
+			if tkey == request.key:
+				ret, results = _GG("DBCManager").MySQL().execute("UPDATE tool SET download = download + 1 WHERE tkey = '%s'"%request.key);
+				if ret:
+					return common_pb2.Resp(code = RespCode.SUCCESS.value);
+            _GG("DBCManager").Redis().delete(request.downloadKey)); # 从缓存中删除下载key值
+		return common_pb2.Resp(code = RespCode.FAILED.value);
