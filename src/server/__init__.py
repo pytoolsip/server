@@ -14,7 +14,7 @@ __all__ = ["CommonServer", "ExtendSrvMethod"];
 
 try:
 	from common_server import CommonServer;
-	from extend_srv_method import ExtendSrvMethod;
+	from ext_srv_method import ExtendSrvMethod;
 
 except Exception as e:
 	raise e;

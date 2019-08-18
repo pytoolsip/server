@@ -80,19 +80,19 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			ret, results = _GG("DBCManager").MySQL().execute("SELECT salt FROM user WHERE name = '%s'"%name);
 			if ret:
 				pwd = hashlib.md5("|".join([results[0]["salt"], pwd]).encode("utf-8")).hexdigest();
-        elif _GG("DBCManager").Redis().exists(pwd):
-            pwd = _GG("DBCManager").Redis().get(pwd); # 从缓存中读取密码
+			elif _GG("DBCManager").Redis().exists(pwd):
+				pwd = _GG("DBCManager").Redis().get(pwd); # 从缓存中读取密码
 		# 从数据库中获取用户信息
 		sql = "SELECT * FROM user WHERE name = '%s' AND password = '%s'"%(name, pwd);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			userInfo = results[0];
 			# 生成索要缓存的密码Md5
-            randMulti = random_util.randomMulti(12); # 12位随机数
-            pwdMd5 = hashlib.md5("|".join([userInfo["password"], randMulti]).encode("utf-8")).hexdigest();
-            # 缓存密码信息
+			randMulti = random_util.randomMulti(12); # 12位随机数
+			pwdMd5 = hashlib.md5("|".join([userInfo["password"], randMulti]).encode("utf-8")).hexdigest();
+			# 缓存密码信息
 			expire = 10*24*60*60; # 缓存10天
-            _GG("DBCManager").Redis().set(pwdMd5, userInfo["password"], expire);
+			_GG("DBCManager").Redis().set(pwdMd5, userInfo["password"], expire);
 			return common_pb2.LoginResp(code = RespCode.SUCCESS.value, expire = expire, 
 				userInfo = common_pb2.UserInfo(uid = userInfo["id"], pwd = pwdMd5, email = userInfo["email"]));
 		return common_pb2.LoginResp(code = RespCode.LOGIN_FAILED.value);
@@ -110,7 +110,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			absFilePath = os.path.join(_GG("ServerConfig").Config().Get("upload", "tool_file_addr"), filePath);
 			if os.path.exists(absFilePath):
 				# 缓存下载键值
-            	randMulti = random_util.randomMulti(12); # 12位随机数
+				randMulti = random_util.randomMulti(12); # 12位随机数
 				downloadKey = hashlib.md5("|".join([request.key, randMulti]).encode("utf-8")).hexdigest();
 				_GG("DBCManager").Redis().set(downloadKey, request.key, 12*60*60); # 缓存12小时
 				# 返回下载数据
@@ -209,10 +209,10 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 	def DownloadRecord(self, request, context):
 		# 更新工具的下载数据
 		if _GG("DBCManager").Redis().exists(request.downloadKey):
-            tkey = _GG("DBCManager").Redis().get(request.downloadKey)); # 从缓存中读取下载key值
+			tkey = _GG("DBCManager").Redis().get(request.downloadKey); # 从缓存中读取下载key值
 			if tkey == request.key:
 				ret, results = _GG("DBCManager").MySQL().execute("UPDATE tool SET download = download + 1 WHERE tkey = '%s'"%request.key);
 				if ret:
 					return common_pb2.Resp(code = RespCode.SUCCESS.value);
-            _GG("DBCManager").Redis().delete(request.downloadKey)); # 从缓存中删除下载key值
+			_GG("DBCManager").Redis().delete(request.downloadKey); # 从缓存中删除下载key值
 		return common_pb2.Resp(code = RespCode.FAILED.value);
