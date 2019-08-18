@@ -95,7 +95,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
             _GG("DBCManager").Redis().set(pwdMd5, userInfo["password"], expire);
 			return common_pb2.LoginResp(code = RespCode.SUCCESS.value, expire = expire, 
 				userInfo = common_pb2.UserInfo(uid = userInfo["id"], pwd = pwdMd5, email = userInfo["email"]));
-		return common_pb2.LoginResp(code = RespCode.LOGIN_FAILED.value, publicKey = _GG("g_PublicKey"));
+		return common_pb2.LoginResp(code = RespCode.LOGIN_FAILED.value);
 
 	def Download(self, request, context):
 		# 获取下载数据

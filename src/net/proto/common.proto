@@ -43,7 +43,6 @@ message LoginResp{
 	int32 code = 1; // 登录应答码
 	UserInfo userInfo = 2; // 玩家信息
 	int64 expire = 3; // 登陆有效期
-	string publicKey = 4; // 登陆失败时,返回公钥信息
 }
 
 // 下载请求
