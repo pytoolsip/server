@@ -91,9 +91,9 @@ class CommonServer(common_pb2_grpc.CommonServicer):
             randMulti = random_util.randomMulti(12); # 12位随机数
             pwdMd5 = hashlib.md5("|".join([userInfo["password"], randMulti]).encode("utf-8")).hexdigest();
             # 缓存密码信息
-			expires = 10*24*60*60; # 缓存10天
-            _GG("DBCManager").Redis().set(pwdMd5, userInfo["password"], expires);
-			return common_pb2.LoginResp(code = RespCode.SUCCESS.value, 
+			expire = 10*24*60*60; # 缓存10天
+            _GG("DBCManager").Redis().set(pwdMd5, userInfo["password"], expire);
+			return common_pb2.LoginResp(code = RespCode.SUCCESS.value, expire = expire, 
 				userInfo = common_pb2.UserInfo(uid = userInfo["id"], pwd = pwdMd5, email = userInfo["email"]));
 		return common_pb2.LoginResp(code = RespCode.LOGIN_FAILED.value, publicKey = _GG("g_PublicKey"));
 
