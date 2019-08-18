@@ -9,7 +9,7 @@ import smtplib;
 from email.mime.text import MIMEText;
 
 from _Global import _GG;
-from net.proto import common_pb2,common_pb2_grpc;
+from net import common_pb2,common_pb2_grpc;
 
 def ExtendSrvMethod():
 	_GG("MainServer").registerMethod("ReqPublicKey", ReqPublicKey);

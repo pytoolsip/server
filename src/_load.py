@@ -17,7 +17,7 @@ if os.path.join(CURRENT_PATH, "core") not in sys.path:
 # 加载工程
 import _Global as _G;
 from function.base import *;
-from net.proto import common_pb2_grpc;
+from net import common_pb2_grpc;
 from dbc import DBCManager;
 
 from behaviorCore.BaseBehavior import BaseBehavior;

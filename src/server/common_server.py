@@ -7,7 +7,7 @@ import os,json,time;
 import hashlib;
 
 from _Global import _GG;
-from net.proto import common_pb2,common_pb2_grpc;
+from net import common_pb2,common_pb2_grpc;
 
 from constant import RespCode;
 from function import random_util;
