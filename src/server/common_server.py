@@ -5,6 +5,7 @@
 # @Last Modified time: 2019-04-20 00:31:29
 import os,json,time;
 import hashlib;
+from urllib import request;
 
 from _Global import _GG;
 from net import common_pb2,common_pb2_grpc;
@@ -73,6 +74,15 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			if self._checkNewestVersion_(self._splitVersion_(result["version"]), self._splitVersion_(bestResult["version"])):
 				bestResult = result;
 		return bestResult;
+		
+	# 获取url文件大小
+	def _getUrlFileSize_(self, url):
+		try:
+			resp = request.urlopen(url);
+			return int(resp.headers['content-length']);
+		except Exception as e:
+			_GG("Log").w(f"Failed to get size by url[{url}]!", e);
+		return -1;
 	
 	def Login(self, request, context):
 		name, pwd = request.name, _GG("DecodeStr")(request.pwd);
@@ -107,15 +117,16 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			_GG("Log").d("Download -> best result:", bestResult);
 			# 返回最优结果
 			filePath = bestResult["file_path"];
-			absFilePath = os.path.join(_GG("ServerConfig").Config().Get("upload", "tool_file_addr"), filePath);
-			if os.path.exists(absFilePath):
+			url = os.path.join(_GG("ServerConfig").Config().Get("download", "tools_dir_url"), filePath);
+			fileSize = self._getUrlFileSize_(url);
+			_GG("Log").d("Download -> get url info:", url, fileSize);
+			if fileSize > 0:
 				# 缓存下载键值
 				randMulti = random_util.randomMulti(12); # 12位随机数
 				downloadKey = hashlib.md5("|".join([request.key, randMulti]).encode("utf-8")).hexdigest();
 				_GG("DBCManager").Redis().set(downloadKey, request.key, 12*60*60); # 缓存12小时
 				# 返回下载数据
-				url = os.path.join(_GG("ServerConfig").Config().Get("download", "tool_file_addr"), filePath);
-				return common_pb2.DownloadResp(code = RespCode.SUCCESS.value, url = url, totalSize = os.path.getsize(absFilePath), downloadKey = downloadKey, 
+				return common_pb2.DownloadResp(code = RespCode.SUCCESS.value, url = url, totalSize = fileSize, downloadKey = downloadKey, 
 				 toolInfo = common_pb2.ToolInfo(tkey = request.key, name = bestResult["tool.name"], category = bestResult["tool.category"],
 				 	description = bestResult["tool.description"], version = bestResult["version"], changelog = bestResult["changelog"], author = bestResult["user.name"]));
 		return common_pb2.DownloadResp(code = RespCode.DOWNLOAD_FAILED.value);
@@ -136,10 +147,11 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			if bestResult["version"] != request.version:
 				# 返回最优结果
 				filePath = bestResult["file_path"];
-				absFilePath = os.path.join(_GG("ServerConfig").Config().Get("upload", "tool_file_addr"), filePath);
-				if os.path.exists(absFilePath):
-					url = os.path.join(_GG("ServerConfig").Config().Get("download", "tool_file_addr"), filePath);
-					return common_pb2.DownloadResp(code = RespCode.SUCCESS.value, url = url, totalSize = os.path.getsize(absFilePath));
+				url = os.path.join(_GG("ServerConfig").Config().Get("download", "tools_dir_url"), filePath);
+				fileSize = self._getUrlFileSize_(url);
+				_GG("Log").d("Update -> get url info:", url, fileSize);
+				if fileSize > 0:
+					return common_pb2.DownloadResp(code = RespCode.SUCCESS.value, url = url, totalSize = fileSize);
 		return common_pb2.UpdateResp(code = RespCode.UPDATE_FAILED.value);
 
 	def UpdateIP(self, request, context):
@@ -163,28 +175,12 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		bestResult = getBestVerPtip(".".join(ptipVerList[:1]));
 		if bestResult:
 			_GG("Log").d("UpdateIP -> best result:", bestResult);
-			if bestResult["version"] != request.version:
-				urlList = [];
-				# 返回平台更新信息
-				filePath = bestResult["file_path"];
-				absFilePath = os.path.join(_GG("ServerConfig").Config().Get("upload", "ptip_file_addr"), filePath);
-				if os.path.exists(absFilePath):
-					url = os.path.join(_GG("ServerConfig").Config().Get("download", "ptip_file_addr"), filePath);
-					urlList.append(common_pb2.UpdateIPResp.urlInfo(url = url, totalSize = os.path.getsize(absFilePath), path = ""));
-				# 返回依赖信息
-				exeList = json.loads(bestResult["exe_list"])
-				for exeInfo in exeList:
-					ret, results = _GG("DBCManager").MySQL().execute("SELECT exe.path, version, file_path FROM exe_detail LEFT OUTER JOIN exe ON exe_detail.eid = exe.id WHERE base_version = '%s'"%exeInfo["base_version"]);
-					if not ret:
-						continue;
-					bestResult = self._getBeseResult_(results);
-					filePath = bestResult["file_path"];
-					absFilePath = os.path.join(_GG("ServerConfig").Config().Get("upload", "exe_file_addr"), filePath);
-					if os.path.exists(absFilePath):
-						url = os.path.join(_GG("ServerConfig").Config().Get("download", "exe_file_addr"), filePath);
-						urlList.append(common_pb2.UpdateIPResp.urlInfo(url = url, totalSize = os.path.getsize(absFilePath), path = bestResult["exe.path"]));
-				# 返回最终结果
-				return common_pb2.UpdateIPResp(code = RespCode.SUCCESS.value, urlList = urlList);
+			bestVersion = bestResult["version"];
+			if bestVersion != request.version:
+				# 返回请求结果
+				reqInfoUrl = _GG("ServerConfig").Config().Get("download", "req_info_url");
+				reqInfo = f"?key=ptip&req=urlList&version={bestVersion}";
+				return common_pb2.UpdateIPResp(code = RespCode.SUCCESS.value, reqUrl = reqInfoUrl+reqInfo);
 		return common_pb2.UpdateIPResp(code = RespCode.UPDATE_FAILED.value);
 
 	def ReqToolInfo(self, request, context):
