@@ -178,9 +178,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			bestVersion = bestResult["version"];
 			if bestVersion != request.version:
 				# 返回请求结果
-				reqInfoUrl = _GG("ServerConfig").Config().Get("download", "req_info_url");
-				reqInfo = f"?key=ptip&req=urlList&version={bestVersion}";
-				return common_pb2.UpdateIPResp(code = RespCode.SUCCESS.value, reqUrl = reqInfoUrl+reqInfo);
+				return common_pb2.UpdateIPResp(code = RespCode.SUCCESS.value, version = bestVersion);
 		return common_pb2.UpdateIPResp(code = RespCode.UPDATE_FAILED.value);
 
 	def ReqToolInfo(self, request, context):
