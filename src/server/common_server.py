@@ -172,7 +172,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 				return bestResult;
 			return None;
 		# 判断是否需要更新
-		bestResult = getBestVerPtip(".".join(ptipVerList[:1]));
+		bestResult = getBestVerPtip(".".join([str(ver) for ver in ptipVerList[:2]]));
 		if bestResult:
 			_GG("Log").d("UpdateIP -> best result:", bestResult);
 			bestVersion = bestResult["version"];
@@ -195,8 +195,8 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if ret:
 			toolInfos = [];
 			for result in results:
-				toolInfos.append(common_pb2.ToolInfo(tkey = request.key, name = bestResult["name"], category = bestResult["category"], description = bestResult["description"], 
-				version = bestResult["version"], changelog = bestResult["changelog"], author = bestResult["user.name"]));
+				toolInfos.append(common_pb2.ToolInfo(tkey = request.key, name = result["name"], category = result["category"], description = result["description"], 
+				version = result["version"], changelog = result["changelog"], author = result["user.name"]));
 			return common_pb2.ToolInfoResp(code = RespCode.SUCCESS.value, toolList = toolInfos);
 		return common_pb2.ToolInfoResp(code = RespCode.UPDATE_FAILED.value);
 
