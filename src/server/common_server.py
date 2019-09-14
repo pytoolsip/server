@@ -127,8 +127,8 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 				_GG("DBCManager").Redis().set(downloadKey, request.key, 12*60*60); # 缓存12小时
 				# 返回下载数据
 				return common_pb2.DownloadResp(code = RespCode.SUCCESS.value, url = url, totalSize = fileSize, downloadKey = downloadKey, 
-				 toolInfo = common_pb2.ToolInfo(tkey = request.key, name = bestResult["tool.name"], category = bestResult["tool.category"],
-				 	description = bestResult["tool.description"], version = bestResult["version"], changelog = bestResult["changelog"], author = bestResult["user.name"]));
+				 toolInfo = common_pb2.ToolInfo(tkey = request.key, name = bestResult["name"], category = bestResult["category"],
+				 	description = bestResult["description"], version = bestResult["version"], changelog = bestResult["changelog"], author = bestResult["user.name"]));
 		return common_pb2.DownloadResp(code = RespCode.DOWNLOAD_FAILED.value);
 
 	def Update(self, request, context):
