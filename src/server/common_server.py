@@ -109,7 +109,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 
 	def Download(self, request, context):
 		# 获取下载数据
-		sql = "SELECT tool.name, tool.category, tool.description, version, changelog, file_path, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND ip_base_version = '%s'"%(request.key, request.IPBaseVer);
+		sql = "SELECT tool.name, tool.category, tool.description, version, changelog, file_path, user.name FROM tool_detail LEFT OUTER JOIN tool ON tool_detail.tkey = tool.tkey LEFT OUTER JOIN user ON tool.uid = user.id WHERE tool.tkey = '%s' AND ip_base_version = '%s'"%(request.key, request.IPBaseVer);
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
 		if ret:
 			# 获取最优结果
@@ -117,7 +117,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			_GG("Log").d("Download -> best result:", bestResult);
 			# 返回最优结果
 			filePath = bestResult["file_path"];
-			url = os.path.join(_GG("ServerConfig").Config().Get("download", "tools_dir_url"), filePath);
+			url = "/".join([_GG("ServerConfig").Config().Get("download", "tools_dir_url"), filePath]);
 			fileSize = self._getUrlFileSize_(url);
 			_GG("Log").d("Download -> get url info:", url, fileSize);
 			if fileSize > 0:
@@ -147,7 +147,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			if bestResult["version"] != request.version:
 				# 返回最优结果
 				filePath = bestResult["file_path"];
-				url = os.path.join(_GG("ServerConfig").Config().Get("download", "tools_dir_url"), filePath);
+				url = "/".join([_GG("ServerConfig").Config().Get("download", "tools_dir_url"), filePath]);
 				fileSize = self._getUrlFileSize_(url);
 				_GG("Log").d("Update -> get url info:", url, fileSize);
 				if fileSize > 0:
@@ -183,7 +183,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 
 	def ReqToolInfo(self, request, context):
 		if request.key:
-			sql = "SELECT tool.name, category, description, version, changelog, user.name FROM tool_detail INNER JOIN tool ON tool_detail.tkey = tool.tkey INNER JOIN user ON tool.uid = user.id WHERE tkey = '%s' AND ip_base_version = '%s' ORDER BY tool_detail.time"%(request.key, request.IPBaseVer);
+			sql = "SELECT tool.name, category, description, version, changelog, user.name FROM tool_detail INNER JOIN tool ON tool_detail.tkey = tool.tkey INNER JOIN user ON tool.uid = user.id WHERE tool.tkey = '%s' AND ip_base_version = '%s' ORDER BY tool_detail.time"%(request.key, request.IPBaseVer);
 			ret, results = _GG("DBCManager").MySQL().execute(sql);
 			if ret:
 				bestResult = results[0];
@@ -195,7 +195,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		if ret:
 			toolInfos = [];
 			for result in results:
-				toolInfos.append(common_pb2.ToolInfo(tkey = request.key, name = result["name"], category = result["category"], description = result["description"], 
+				toolInfos.append(common_pb2.ToolInfo(tkey = result["tkey"], name = result["name"], category = result["category"], description = result["description"], 
 				version = result["version"], changelog = result["changelog"], author = result["user.name"]));
 			return common_pb2.ToolInfoResp(code = RespCode.SUCCESS.value, toolList = toolInfos);
 		return common_pb2.ToolInfoResp(code = RespCode.UPDATE_FAILED.value);
