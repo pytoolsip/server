@@ -2,7 +2,7 @@
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2020-02-02 23:13:32
+# @Last Modified time: 2020-02-02 23:56:23
 import os,json,time;
 import hashlib;
 from urllib import request;
@@ -162,7 +162,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			return common_pb2.UpdateIPResp(code = RespCode.UPDATE_FAILED.value);
 		# 获取最优版本的平台信息
 		def getBestVerPtip(base_version):
-			ret, results = _GG("DBCManager").MySQL().execute("SELECT update_version, version, file_path, exe_list FROM ptip WHERE base_version = '%s'"%base_version);
+			ret, results = _GG("DBCManager").MySQL().execute("SELECT update_version, version, file_path, exe_list FROM ptip WHERE status = 1 AND base_version = '%s'"%base_version);
 			if ret:
 				# 获取最优结果
 				bestResult = self._getBeseResult_(results);
