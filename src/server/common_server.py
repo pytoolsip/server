@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
-# @Last Modified by:   JimZhang
-# @Last Modified time: 2020-02-01 16:28:58
+# @Last Modified by:   JimDreamHeart
+# @Last Modified time: 2020-02-02 23:13:32
 import os,json,time;
 import hashlib;
 from urllib import request;
@@ -57,7 +57,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 			category += "/";
 		return category;
 
-	def _checkNewestVersion_(verList, toolVerList, isCheckV1 = True, isIncludeEqu = False):
+	def _checkNewestVersion_(self, verList, toolVerList, isCheckV1 = True, isIncludeEqu = False):
 		if isCheckV1 and verList[0] != toolVerList[0]:
 			return verList[0] > toolVerList[0];
 		if verList[1] != toolVerList[1]:
