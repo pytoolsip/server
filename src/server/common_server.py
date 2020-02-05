@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
-# @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2020-02-02 23:56:23
+# @Last Modified by:   JimZhang
+# @Last Modified time: 2020-02-05 16:18:28
 import os,json,time;
 import hashlib;
 from urllib import request;
@@ -85,7 +85,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		return -1;
 	
 	def Login(self, request, context):
-		name, pwd = request.name, _GG("DecodeStr")(request.pwd);
+		name, pwd = _GG("DecodeStr")(request.name), _GG("DecodeStr")(request.pwd);
 		if not request.isAuto:
 			ret, results = _GG("DBCManager").MySQL().execute("SELECT salt FROM user_authority LEFT OUTER JOIN user ON user_authority.uid = user.id WHERE user.name = '%s'"%name);
 			if ret:
