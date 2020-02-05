@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
-# @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2020-02-02 23:56:23
+# @Last Modified by:   JimZhang
+# @Last Modified time: 2020-02-05 16:39:55
 import os,json,time;
 import hashlib;
 from urllib import request;
@@ -85,26 +85,30 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 		return -1;
 	
 	def Login(self, request, context):
-		name, pwd = request.name, _GG("DecodeStr")(request.pwd);
-		if not request.isAuto:
-			ret, results = _GG("DBCManager").MySQL().execute("SELECT salt FROM user_authority LEFT OUTER JOIN user ON user_authority.uid = user.id WHERE user.name = '%s'"%name);
+		_GG("Log").d("Login:", request.name, request.pwd, request.isAuto);
+		try:
+			name, pwd = request.name, _GG("DecodeStr")(request.pwd);
+			if not request.isAuto:
+				ret, results = _GG("DBCManager").MySQL().execute("SELECT salt FROM user_authority LEFT OUTER JOIN user ON user_authority.uid = user.id WHERE user.name = '%s'"%name);
+				if ret:
+					pwd = hashlib.md5("|".join([results[0]["salt"], pwd]).encode("utf-8")).hexdigest();
+				elif _GG("DBCManager").Redis().exists(pwd):
+					pwd = _GG("DBCManager").Redis().get(pwd); # 从缓存中读取密码
+			# 从数据库中获取用户信息
+			sql = "SELECT * FROM user LEFT OUTER JOIN user_authority ON user_authority.uid = user.id WHERE name = '%s' AND user_authority.password = '%s'"%(name, pwd);
+			ret, results = _GG("DBCManager").MySQL().execute(sql);
 			if ret:
-				pwd = hashlib.md5("|".join([results[0]["salt"], pwd]).encode("utf-8")).hexdigest();
-			elif _GG("DBCManager").Redis().exists(pwd):
-				pwd = _GG("DBCManager").Redis().get(pwd); # 从缓存中读取密码
-		# 从数据库中获取用户信息
-		sql = "SELECT * FROM user LEFT OUTER JOIN user_authority ON user_authority.uid = user.id WHERE name = '%s' AND user_authority.password = '%s'"%(name, pwd);
-		ret, results = _GG("DBCManager").MySQL().execute(sql);
-		if ret:
-			userInfo = results[0];
-			# 生成索要缓存的密码Md5
-			randMulti = random_util.randomMulti(12); # 12位随机数
-			pwdMd5 = hashlib.md5("|".join([pwd, randMulti]).encode("utf-8")).hexdigest();
-			# 缓存密码信息
-			expire = 10*24*60*60; # 缓存10天
-			_GG("DBCManager").Redis().set(pwdMd5, pwd, expire);
-			return common_pb2.LoginResp(code = RespCode.SUCCESS.value, expire = expire, 
-				userInfo = common_pb2.UserInfo(uid = userInfo["id"], pwd = pwdMd5, email = userInfo["email"]));
+				userInfo = results[0];
+				# 生成索要缓存的密码Md5
+				randMulti = random_util.randomMulti(12); # 12位随机数
+				pwdMd5 = hashlib.md5("|".join([pwd, randMulti]).encode("utf-8")).hexdigest();
+				# 缓存密码信息
+				expire = 10*24*60*60; # 缓存10天
+				_GG("DBCManager").Redis().set(pwdMd5, pwd, expire);
+				return common_pb2.LoginResp(code = RespCode.SUCCESS.value, expire = expire, 
+					userInfo = common_pb2.UserInfo(uid = userInfo["id"], pwd = pwdMd5, email = userInfo["email"]));
+		except Exception as e:
+			_GG("Log").w(f"Failed to login IP! Err[{e}]!");
 		return common_pb2.LoginResp(code = RespCode.LOGIN_FAILED.value);
 
 	def Download(self, request, context):
