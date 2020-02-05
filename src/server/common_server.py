@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimDreamHeart
 # @Date:   2019-02-23 21:07:59
-# @Last Modified by:   JimZhang
-# @Last Modified time: 2020-02-05 16:39:55
+# @Last Modified by:   JimDreamHeart
+# @Last Modified time: 2020-02-05 17:03:56
 import os,json,time;
 import hashlib;
 from urllib import request;
@@ -106,7 +106,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 				expire = 10*24*60*60; # 缓存10天
 				_GG("DBCManager").Redis().set(pwdMd5, pwd, expire);
 				return common_pb2.LoginResp(code = RespCode.SUCCESS.value, expire = expire, 
-					userInfo = common_pb2.UserInfo(uid = userInfo["id"], pwd = pwdMd5, email = userInfo["email"]));
+					userInfo = common_pb2.UserInfo(uid = userInfo["id"], name = userInfo["name"], pwd = pwdMd5, email = userInfo["email"]));
 		except Exception as e:
 			_GG("Log").w(f"Failed to login IP! Err[{e}]!");
 		return common_pb2.LoginResp(code = RespCode.LOGIN_FAILED.value);
