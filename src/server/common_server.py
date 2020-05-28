@@ -189,6 +189,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 				bestResult = results[0];
 				return common_pb2.ToolInfoResp(code = RespCode.SUCCESS.value, toolInfo = common_pb2.ToolInfo(tkey = request.key, name = bestResult["name"],
 				category = bestResult["category"], description = bestResult["description"], version = bestResult["version"], changelog = bestResult["changelog"], author = bestResult["user.name"]));
+			return common_pb2.ToolInfoResp(code = RespCode.FAILED.value);
 		# 返回对应平台基础版本的所有工具信息
 		sql = "SELECT tool.name, category, description, tool.tkey, version, changelog, user.name FROM tool_detail INNER JOIN tool ON tool_detail.tkey = tool.tkey INNER JOIN user ON tool.uid = user.id WHERE ip_base_version = '%s' ORDER BY tool_detail.time"%request.IPBaseVer;
 		ret, results = _GG("DBCManager").MySQL().execute(sql);
@@ -198,7 +199,7 @@ class CommonServer(common_pb2_grpc.CommonServicer):
 				toolInfos.append(common_pb2.ToolInfo(tkey = result["tkey"], name = result["name"], category = result["category"], description = result["description"], 
 				version = result["version"], changelog = result["changelog"], author = result["user.name"]));
 			return common_pb2.ToolInfoResp(code = RespCode.SUCCESS.value, toolList = toolInfos);
-		return common_pb2.ToolInfoResp(code = RespCode.UPDATE_FAILED.value);
+		return common_pb2.ToolInfoResp(code = RespCode.FAILED.value);
 
 	def DownloadRecord(self, request, context):
 		# 更新工具的下载数据
