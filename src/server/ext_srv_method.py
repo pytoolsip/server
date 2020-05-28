@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimZhang
 # @Date:   2019-03-01 21:16:40
-# @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-04-20 00:17:13
+# @Last Modified by:   JimZhang
+# @Last Modified time: 2020-02-05 10:31:06
 import hashlib;
 import random;
 import smtplib;
@@ -17,4 +17,4 @@ def ExtendSrvMethod():
 
 # 请求公钥数据
 def ReqPublicKey(data, context):
-	return True, {"key" : _GG("g_PublicKey")};
+	return True, {"key" : _GG("GetPublicKey")()};

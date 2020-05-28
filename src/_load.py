@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: JimZhang
 # @Date:   2019-02-24 05:05:50
-# @Last Modified by:   JinZhang
-# @Last Modified time: 2019-03-15 11:06:02
+# @Last Modified by:   JimZhang
+# @Last Modified time: 2020-02-05 10:30:51
 import os;
 import sys;
 import time;
@@ -69,6 +69,7 @@ class Loader(object):
 	def loadGlobalInfo(self):
 		self.loadPaths(); # 加载全局路径名变量
 		self.loadObjects(); # 加载全局对象变量
+		self.loadFuncs(); # 加载全局函数变量
 		self.loadConfigs(); # 加载全局配置变量
 		self.loadResources(); # 加载全局资源变量
 		pass;
@@ -91,7 +92,7 @@ class Loader(object):
 	def loadFuncs(self):
 		# 加载rsa密钥解码方法
 		_G.setGlobalVarTo_Global("DecodeStr", rsaCore.decodeStr);
-		_G.setGlobalVarTo_Global("g_PublicKey", rsaCore.getPublicKey);
+		_G.setGlobalVarTo_Global("GetPublicKey", rsaCore.getPublicKey);
 
 	# 加载全局配置变量
 	def loadConfigs(self):
